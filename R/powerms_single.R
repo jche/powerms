@@ -18,10 +18,9 @@ powerms_single <- function(
     tx_var = z,
     outcome_var = y,
     site_id = sid,
-    num_sims = 100,
-    ...
-    ) {
+    num_sims = 100) {
   stopifnot(is.function(sim_data_method))
+  stopifnot(is.function(est_method))
 
   res <- purrr::map_dfr(
     1:num_sims,
@@ -33,8 +32,8 @@ powerms_single <- function(
                         outcome_var = {{outcome_var}},
                         site_id = {{site_id}}) %>%
         est_method() %>%
-        dplyr::mutate(sim_id = x) %>%
-        dplyr::select(sim_id, everything())
+        dplyr::mutate(rep_id = x) %>%
+        dplyr::select(rep_id, everything())
     },
     .progress="Simulating and analyzing datasets..."
   )

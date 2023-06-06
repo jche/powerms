@@ -1,6 +1,6 @@
 
-# input: powms() output
-# output: print
+# input: powerms_single() output
+# output: useful results and description of powerms_single() run
 summary_powerms_single <- function(p) {
   cat(paste(
     "Average margin of error:",
@@ -24,3 +24,19 @@ summary_powerms_single <- function(p) {
           attr(p, "sim_data_args"),
           sep=": ", collapse="\n  ")))
 }
+
+
+
+# input: powerms() output
+# output: output with simulation settings as columns
+add_sim_params <- function(p) {
+  p_list <- split(p, ~sim_id)
+  attr(p, "sim_params") %>%
+    dplyr::mutate(
+      res = p_list,
+      .before = dplyr::everything()) %>%
+    dplyr::select(-sim_id) %>%
+    tidyr::unnest(res)
+}
+
+
