@@ -30,13 +30,9 @@ summary_powerms_single <- function(p) {
 # input: powerms() output
 # output: output with simulation settings as columns
 add_sim_params <- function(p) {
-  p_list <- split(p, ~sim_id)
-  attr(p, "sim_params") %>%
-    dplyr::mutate(
-      res = p_list,
-      .before = dplyr::everything()) %>%
-    dplyr::select(-sim_id) %>%
-    tidyr::unnest(res)
+  p %>%
+    dplyr::left_join(attr(p, "sim_params"),
+                     by = "sim_id")
 }
 
 
