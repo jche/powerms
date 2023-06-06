@@ -10,7 +10,7 @@
 # output: site-level dataset, with:
 #   - estimated tau_j_hat
 #   - lower & upper bounds of alpha% CI
-powerms <- function(
+powerms_single <- function(
     sim_data_method,
     sim_data_args,
     se_method = "pooled",
@@ -39,15 +39,15 @@ powerms <- function(
     .progress="Simulating and analyzing datasets..."
   )
 
-  attr(res, "sim_data_method") <- NA
-  attr(res, "est_method") <- NA
+  attr(res, "sim_data_method") <- paste0(deparse(substitute(sim_data_method)), "()")
+  attr(res, "est_method") <- paste0(deparse(substitute(est_method)), "()")
   attr(res, "sim_data_args") <- sim_data_args
 
   res
 }
 
 if (F) {
-  foo <- powerms(
+  foo <- powerms_single(
     sim_data_method = sim_b_nn,
     sim_data_args = list(
       site_sizes = rep(50, 10),
@@ -57,18 +57,17 @@ if (F) {
       sig_tau = 0.2,
       rho = 0),
     se_method = "pooled",
-    # est_method = run_t_test,
-    est_method = run_mlm,
+    est_method = run_t_test,
+    # est_method = run_mlm,
     num_sims = 10
   )
 
-  foo
-  attr(foo, "sim_data_args")
+  summary_powerms_single(foo)
 
-  # NOTE: need to load blkvar dependencies, e.g., dplyr...
-  # TODO: need to make est_method work with blkvar data
+  # NOTE: need to load blkvar dependencies, e.g., dplyr,
+  #  to make blkvar::generate_multilevel_data() work...
   library(dplyr)
-  foo <- powerms(
+  foo <- powerms_single(
     sim_data_method = blkvar::generate_multilevel_data,
     sim_data_args = list(
       n.bar = 25,
@@ -90,6 +89,8 @@ if (F) {
     site_id = sid,
     num_sims = 10
   )
+
+  summary_powerms_single(foo)
 }
 
 
