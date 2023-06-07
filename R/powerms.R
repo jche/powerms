@@ -29,7 +29,8 @@ powerms <- function(
         site_id = {{site_id}},
         num_sims = num_sims) %>%
         dplyr::mutate(sim_id = i, .before = rep_id)
-    })
+    },
+    .progress="Simulating and analyzing all simulation settings...")
 
   res <- purrr::list_rbind(res_list)
   attr(res, "sim_params") <- args_df %>%
@@ -38,33 +39,3 @@ powerms <- function(
   res
 }
 
-
-if (F) {
-  library(dplyr)
-  foo <- powerms(
-    sim_data_method = blkvar::generate_multilevel_data,
-    sim_data_args = list(
-      n.bar = c(25, 50),
-      J = 25,
-      p = 0.5,
-      tau.11.star = 0.3,   # Total amount of cross-site treatment variation
-      rho2.0W = 0.1,  # Explanatory power of W for control outcomes
-      rho2.1W = 0.5,  # Explanatory power of W for average treatment impact
-      ICC = 0.7,   # ICC; 1-sigma2.e
-      gamma.00 = 0,
-      gamma.10 = 0.2,
-      zero.corr = F,
-      variable.n = T),
-    se_method = "pooled",
-    est_method = run_t_test,
-    # est_method = run_mlm,
-    tx_var = Z,
-    outcome_var = Yobs,
-    site_id = sid,
-    num_sims = 10
-  )
-
-  foo
-  attr(foo, "sim_params")
-  add_sim_params(foo)
-}
