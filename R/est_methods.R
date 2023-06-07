@@ -88,18 +88,8 @@ run_mlm <- function(sdat, alpha=0.05) {
     tau_j_hat = sdat$tau_hat,
     se_j = sdat$se)
 
-  # # load model, if not already loaded (loading models takes time)
-  # if (!exists("mod_norm")) {
-  #   # global assignment to avoid garbage collection and subsequent recompiling
-  #   mod_norm <<- rstan::stan_model(# "Stan/dp_normal_reparam.stan",
-  #     "inst/stan/normal_mlm.stan",
-  #     model_name = "norm",
-  #     auto_write = T)
-  # }
-
   # fit model
   fit_norm <- rstan::sampling(
-    # mod_norm,
     stanmodels$normal_mlm,
     data = stan_list,
     iter = 2000,
@@ -112,14 +102,6 @@ run_mlm <- function(sdat, alpha=0.05) {
 
   samples_norm <- rstan::extract(fit_norm)
   site_effects_norm <- samples_norm$tau_j
-  if (FALSE) {
-    site_effects_norm %>%
-      as_tibble() %>%
-      pivot_longer(everything()) %>%
-      ggplot() +
-      geom_histogram(aes(x=value)) +
-      facet_wrap(~name)
-  }
 
   sdat %>%
     dplyr::select(sid, tau_hat) %>%

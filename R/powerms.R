@@ -29,8 +29,7 @@ powerms <- function(
         site_id = {{site_id}},
         num_sims = num_sims) %>%
         dplyr::mutate(sim_id = i, .before = rep_id)
-    },
-    .progress="Simulating and analyzing all simulation settings...")
+    })
 
   res <- purrr::list_rbind(res_list)
   attr(res, "sim_params") <- args_df %>%
