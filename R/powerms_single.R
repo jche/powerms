@@ -22,6 +22,14 @@ powerms_single <- function(
   stopifnot(is.function(sim_data_method))
   stopifnot(is.function(est_method))
 
+  # hacky workaround: vector parameters (e.g., site.sizes) end up
+  #  nested one layer too deep in the list, so we unlist them here.
+  sim_data_args <- purrr::map(sim_data_args,
+                              function(a) {
+                                if (is.list(a)) {return(a[[1]])}
+                                a
+                              })
+
   res <- purrr::map_dfr(
     1:num_sims,
     function(x) {

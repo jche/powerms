@@ -4,16 +4,17 @@
 # sim_data_args is list of all settings to gridsearch over
 powerms <- function(
     sim_data_method,
-    sim_data_args,
     se_method = "pooled",
     est_method,
     tx_var = z,
     outcome_var = y,
     site_id = sid,
-    num_sims = 100) {
+    num_sims = 100,
+    ...) {
   stopifnot(is.function(sim_data_method))
   stopifnot(is.function(est_method))
 
+  sim_data_args <- list(...)
   args_df <- expand.grid(sim_data_args)
 
   res_list <- purrr::map(
