@@ -15,7 +15,15 @@ powerms <- function(
   stopifnot(is.function(est_method))
 
   sim_data_args <- list(...)
-  args_df <- expand.grid(sim_data_args)
+
+  # check if user manually specified args_df
+  if ("args_df" %in% names(sim_data_args)) {
+    args_df <- sim_data_args$args_df
+  } else {
+    args_df <- expand.grid(sim_data_args)
+  }
+
+  browser()
 
   res_list <- purrr::map(
     1:nrow(args_df),

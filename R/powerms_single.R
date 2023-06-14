@@ -22,15 +22,16 @@ powerms_single <- function(
   stopifnot(is.function(sim_data_method))
   stopifnot(is.function(est_method))
 
-  # hacky workaround: vector parameters (e.g., site.sizes) end up
-  #  nested one layer too deep in the list, so we unlist them here.
+  # hacky workaround: expand.grid() in powerms ends up nesting
+  # vector parameters (e.g., site.sizes) one layer too deep in the list,
+  # so we unlist them here.
   sim_data_args <- purrr::map(sim_data_args,
                               function(a) {
                                 if (is.list(a)) {return(a[[1]])}
                                 a
                               })
 
-  res <- purrr::map_dfr(
+  res <- purrr::map(
     1:num_sims,
     function(x) {
       sim_data_method %>%
@@ -44,7 +45,8 @@ powerms_single <- function(
         dplyr::select(rep_id, everything())
     },
     .progress="Simulating and analyzing datasets..."
-  )
+  ) %>%
+    purrr::list_rbind()
 
   attr(res, "sim_data_method") <- paste0(deparse(substitute(sim_data_method)), "()")
   attr(res, "est_method") <- paste0(deparse(substitute(est_method)), "()")
