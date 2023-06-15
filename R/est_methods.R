@@ -16,7 +16,6 @@ summarize_sites <- function(df,
                             site_id,
                             se=c("pooled", "individual")) {
   se <- match.arg(se)
-  # browser()
 
   # output: tibble with J rows
   #  - cols: sid & (ybar, n, sd) for tx/co units
@@ -67,9 +66,10 @@ summarize_sites <- function(df,
 
   df_full %>%
     dplyr::mutate(
+      n = n1 + n0,
       tau_hat = ybar1 - ybar0,
       se = sqrt(sd1^2 / n1 + sd0^2 / n0)) %>%
-    dplyr::select({{site_id}}, tau_hat, se)
+    dplyr::select({{site_id}}, n, tau_hat, se)
 }
 
 

@@ -20,8 +20,10 @@ powerms <- function(
   if ("args_df" %in% names(sim_data_args)) {
     args_df <- sim_data_args$args_df
   } else {
-    args_df <- expand.grid(sim_data_args)
+    args_df <- expand.grid(sim_data_args, stringsAsFactors = F)
   }
+
+  if (exists("DEBUGGING")) { browser() }
 
   res_list <- purrr::map(
     1:nrow(args_df),
@@ -36,7 +38,8 @@ powerms <- function(
         site_id = {{site_id}},
         num_sims = num_sims) %>%
         dplyr::mutate(sim_id = i, .before = rep_id)
-    })
+    },
+    .progress = "Running simulations...")
 
   res <- purrr::list_rbind(res_list)
   attr(res, "sim_params") <- args_df %>%

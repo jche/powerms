@@ -31,6 +31,8 @@ powerms_single <- function(
                                 a
                               })
 
+  if (exists("DEBUGGING")) { browser() }
+
   res <- purrr::map(
     1:num_sims,
     function(x) {
