@@ -3,35 +3,6 @@
 #  - input: all parameters of dataset
 #  - output: individual-level dataset
 
-# naming: sim_x_yz
-#  - x: type of outcome
-#  - y: distribution for school-level intercepts
-#  - z: distribution for school-level treatment effects
-
-
-
-# pulled from blkvar package
-#  - minimum site size: 4
-#  - sd(nj) is roughly: nbar * sqrt(size_ratio)
-gen_site_sizes <- function(nbar, J, size_ratio) {
-  stopifnot("Average site size (nbar) must be greater than 4" = nbar > 4)
-
-  N <- 1 + 3 * size_ratio
-  p <- (N - 1)/N
-  small <- rbinom(J, 1, p)
-  Y <- runif(J)
-  Y <- nbar * ifelse(small, Y, Y * (N - 1) + 1)
-
-  # ensure all sites have at least 4 observations
-  nj <- round(Y)
-  nj[nj < 4] <- 4
-  nj
-}
-
-
-# required parameters are those that ALWAYS need to exist
-# optional parameters:
-#  - site_sizes
 sim_data <- function(
     outcome = c("continuous", "binary"),
     intercept_dist = c("normal"),
@@ -66,8 +37,7 @@ sim_data <- function(
     cor_tau_p = 0,
 
     # observation-level parameters
-    ICC = 0.3
-    ) {
+    ICC = 0.3) {
 
   outcome <- match.arg(outcome)
   intercept_dist <- match.arg(intercept_dist)
@@ -82,7 +52,7 @@ sim_data <- function(
   # ensure J matches with manually specified site sizes/ps
   if (!is.null(site_sizes) | !is.null(site_ps)) {
     if (!is.null(site_sizes) & !is.null(site_ps)) {
-      stopifnot(length(site_sizes == length(site_ps)))
+      stopifnot(length(site_sizes) == length(site_ps))
     }
     J <- max(length(site_sizes), length(site_ps))
   }
@@ -106,6 +76,7 @@ sim_data <- function(
     }
   }
 
+  # generate dataset
   fabricatr::fabricate(
     sid = add_level(
       N = J,
@@ -145,7 +116,7 @@ sim_data <- function(
           # induce correlation between tau_j and p_j
           p_j_temp <- site_ps[order(
             cor_tau_p^2 * site_ps + (1-cor_tau_p^2) * rnorm(J, sd=sd(site_ps)) )]
-          p_j_temp[order(order(sign(cor_tau_p) * tau_j))]
+          p_j_temp[ order(order(sign(cor_tau_p)*tau_j)) ]
         } else {
           site_ps
         }
@@ -161,20 +132,12 @@ sim_data <- function(
           total_sd = 1,
           ICC = ICC)
       } else {   # binary outcome
-        draw_binary_icc(
-          prob = alpha_j,
-          clusters = sid,
-          ICC = ICC
-        )
+        rbinom(n_j, size=1, prob=floor_ceil(alpha_j))
       },
       Y1 = if (outcome == "continuous") {
         Y0 + tau_j
       } else {
-        draw_binary_icc(
-          prob = alpha_j + tau_j,
-          clusters = sid,
-          ICC = ICC
-        )
+        rbinom(n_j, size=1, prob=floor_ceil(alpha_j + tau_j))
       },
       Z = rbinom(n_j, size=1, p=p_j),
       Yobs = ifelse(Z, Y1, Y0)
@@ -193,21 +156,42 @@ if (F) {
   }) %>%
     mean()
 
-  sim_data(outcome = "continuous",
-           intercept_dist = "normal",
-           effect_dist = "normal",
-           site_ps = seq(0.1,0.5,by=0.1),
+  foo <- sim_data(
+    outcome = "binary",
+    intercept_dist = "normal",
+    effect_dist = "normal",
 
-           alpha = 0,
-           sig_alpha = 1,
-           tau = 0.2,
-           sig_tau = 0.1,
-           rho = 0.47,
+    J = 15,
+    nbar = 1000,
+    vary_site_sizes = F,
+    pbar = 0.5,
+    vary_site_ps = F,
 
-           cor_tau_p = 0.3,
-           ICC = 0.2
+    alpha = 0.175,
+    sig_alpha = 0.01,
+    tau = 0.03,
+    sig_tau = 0.03,
+    a = 1.5,
+    b = 50,
+
+    cor_tau_n = 0,
+    cor_tau_p = 0,
+    ICC = 0.3
   )
+
+  foo %>%
+    group_by(sid, alpha_j, tau_j, n_j, p_j) %>%
+    summarize(tau = mean(Y1 - Y0),
+              tauhat = mean(Yobs[Z==1]) - mean(Yobs[Z==0])) %>%
+    ggplot(aes(x=tau_j, y=tau)) +
+    geom_point() +
+    geom_abline()
 }
+
+# naming: sim_x_yz
+#  - x: type of outcome
+#  - y: distribution for school-level intercepts
+#  - z: distribution for school-level treatment effects
 
 sim_b_nn <- function(
     site_sizes = rep(50, 10),

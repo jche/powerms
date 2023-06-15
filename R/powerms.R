@@ -23,8 +23,6 @@ powerms <- function(
     args_df <- expand.grid(sim_data_args)
   }
 
-  browser()
-
   res_list <- purrr::map(
     1:nrow(args_df),
     function(i) {
