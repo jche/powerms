@@ -34,53 +34,6 @@ powerms_single <- function(
 
   if (exists("DEBUGGING")) { browser() }
 
-  # if (parallel) {
-  #   ncores <- future::availableCores() - 1
-  #   future::plan(future::multisession, workers = ncores)
-  # } else {
-  #   future::plan(future::sequential)
-  # }
-  #
-  # res <- furrr::future_map(
-  #   1:num_sims,
-  #   function(x) {
-  #     sim_data_method %>%
-  #       do.call(sim_data_args) %>%
-  #       summarize_sites_fixed(se = se_method) %>%
-  #       # # !!! curly-curly doesn't work with furrr !!!
-  #       # summarize_sites(se = se_method,
-  #       #                 tx_var = {{tx_var}},
-  #       #                 outcome_var = {{outcome_var}},
-  #       #                 site_id = {{site_id}}) %>%
-  #       est_method() %>%
-  #       dplyr::mutate(rep_id = x) %>%
-  #       dplyr::select(rep_id, everything())
-  #   },
-  #   .progress=T,
-  #   .options = furrr::furrr_options(
-  #     seed = T,
-  #     globals = c("sim_data_method", "sim_data_args", "se_method", "est_method"))
-  # ) %>%
-  #   purrr::list_rbind()
-
-  # res <- purrr::map(
-  #   1:num_sims,
-  #   function(x) {
-  #     sim_data_method %>%
-  #       do.call(sim_data_args) %>%
-  #       summarize_sites_fixed(se = se_method) %>%
-  #       # summarize_sites(se = se_method,
-  #       #                 tx_var = {{tx_var}},
-  #       #                 outcome_var = {{outcome_var}},
-  #       #                 site_id = {{site_id}}) %>%
-  #       est_method() %>%
-  #       dplyr::mutate(rep_id = x) %>%
-  #       dplyr::select(rep_id, everything())
-  #   },
-  #   .progress=T
-  # ) %>%
-  #   purrr::list_rbind()
-
   if (parallel) {
     ncores <- future::availableCores() - 1
     future::plan(future::multisession, workers = ncores)
@@ -94,9 +47,9 @@ powerms_single <- function(
       sim_data_method %>%
         do.call(sim_data_args) %>%
 
-        # curly-curly doesn't work with furrr
-        # workaround: manually rename columns to Z, Y, sid
-        #  and use function that assumes use of these names
+        # !!! curly-curly doesn't work with furrr !!!
+        #  - see https://furrr.futureverse.org/articles/gotchas.html
+        # workaround: rename cols to Z, Y, sid, use function assuming these names
         dplyr::rename(
           "Z" = dplyr::all_of(tx_var),
           "Y" = dplyr::all_of(outcome_var),
@@ -115,10 +68,6 @@ powerms_single <- function(
   attr(res, "sim_data_method") <- paste0(deparse(substitute(sim_data_method)), "()")
   attr(res, "est_method") <- paste0(deparse(substitute(est_method)), "()")
   attr(res, "sim_data_args") <- sim_data_args
-
-  # if (parallel) {
-  #   parallel::stopCluster(cl)
-  # }
 
   res
 }

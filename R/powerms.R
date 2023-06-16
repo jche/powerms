@@ -1,6 +1,10 @@
 
 # conduct power analyses for a user-specified grid of settings
 
+# NOTE: to use powerms locally while developing, need to devtools::install()
+#  the full package! (furrr doesn't play nicely, some globals issue...)
+#  - see https://github.com/DavisVaughan/furrr/issues/95
+
 # sim_data_args is list of all settings to gridsearch over
 powerms <- function(
     sim_data_method,

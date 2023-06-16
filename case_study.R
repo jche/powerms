@@ -1,14 +1,16 @@
 
 # script to replicate case study plots
 
+# TIMING INFO
+#
 # 10 sims:
 #  - 25 seconds without parallelization
 #  - 40 seconds in parallel
-
+#
 # 100 sims:
 #  - 147 seconds in parallel
+#
 
-tictoc::tic()
 res_norm <- powerms(
   sim_data_method = sim_data,
   se_method = "pooled",
@@ -32,15 +34,13 @@ res_norm <- powerms(
   alpha = 0.175,
   sig_alpha = 0.01,
   tau = 0.03,
-  sig_tau = c(0.01, 0.02),
-  # sig_tau = c(0.01, 0.02, 0.03, 0.04, 0.05),
+  sig_tau = c(0.01, 0.02, 0.03, 0.04, 0.05),
   # rho = c(0, 0.3, 0.6),
   rho = 0,
 
   cor_tau_n = 0,
   cor_tau_p = 0
 )
-tictoc::toc()
 
 # replicate Figure 3.10!
 res_norm %>%
@@ -56,10 +56,9 @@ res_norm %>%
   ggplot2::geom_point() +
   ggplot2::geom_line()
 
+#
 
 
-# TODO: why does t-test moe vary with sig_tau...?
-#  - A: it's just monte carlo error
 
 summary_powerms_single(res_norm)
 

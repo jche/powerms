@@ -20,7 +20,6 @@ Imports:
     ggplot2,
     magrittr,
     methods,
-    mvtnorm,
     parallel,
     purrr,
     Rcpp (>= 0.12.0),
