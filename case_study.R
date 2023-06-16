@@ -1,48 +1,23 @@
 
 # script to replicate case study plots
 
-library(dplyr)
+# 10 sims:
+#  - 25 seconds without parallelization
+#  - 40 seconds in parallel
 
-foo <- powerms_single(
-  sim_data_method = sim_data,
-  se_method = "pooled",
-  est_method = run_t_test,
-  tx_var = Z,
-  outcome_var = Yobs,
-  site_id = sid,
-  num_sims = 10,
+# 100 sims:
+#  - 147 seconds in parallel
 
-  sim_data_args = list(
-    outcome = "binary",
-    intercept_dist = "normal",
-    effect_dist = "normal",
-
-    J = 15,
-    nbar = 1000,
-    vary_site_sizes = F,
-    pbar = 0.5,
-    vary_site_ps = F,
-
-    alpha = 0.175,
-    sig_alpha = 0.01,
-    tau = 0.03,
-    sig_tau = 0.03,
-    a = 1.5,
-    b = 50,
-
-    cor_tau_n = 0,
-    cor_tau_p = 0
-  )
-)
-
+tictoc::tic()
 res_norm <- powerms(
   sim_data_method = sim_data,
   se_method = "pooled",
-  est_method = run_t_test,
-  tx_var = Z,
-  outcome_var = Yobs,
-  site_id = sid,
+  est_method = run_mlm,
+  tx_var = "Z",
+  outcome_var = "Y",
+  site_id = "sid",
   num_sims = 100,
+  parallel = T,
 
   outcome = "binary",
   intercept_dist = "normal",
@@ -57,25 +32,31 @@ res_norm <- powerms(
   alpha = 0.175,
   sig_alpha = 0.01,
   tau = 0.03,
-  sig_tau = c(0.01, 0.02, 0.03, 0.04, 0.05),
+  sig_tau = c(0.01, 0.02),
+  # sig_tau = c(0.01, 0.02, 0.03, 0.04, 0.05),
   # rho = c(0, 0.3, 0.6),
   rho = 0,
 
   cor_tau_n = 0,
   cor_tau_p = 0
 )
+tictoc::toc()
 
 # replicate Figure 3.10!
 res_norm %>%
   add_sim_params() %>%
   force_sid_n_match() %>%
-  filter(rho == 0) %>%
-  group_by(sim_id, sig_tau, rho, sid) %>%
-  summarize(n = first(n),
-            avg_moe = mean(ci_r - ci_l) / 2) %>%
-  ggplot(aes(x=n, y=avg_moe, group=sim_id, color=as.factor(sig_tau))) +
-  geom_point() +
-  geom_line()
+  dplyr::filter(rho == 0) %>%
+  dplyr::group_by(sim_id, sig_tau, rho, sid) %>%
+  dplyr::summarize(
+    n = dplyr::first(n),
+    avg_moe = mean(ci_r - ci_l) / 2) %>%
+  ggplot2::ggplot(ggplot2::aes(
+    x=n, y=avg_moe, group=sim_id, color=as.factor(sig_tau))) +
+  ggplot2::geom_point() +
+  ggplot2::geom_line()
+
+
 
 # TODO: why does t-test moe vary with sig_tau...?
 #  - A: it's just monte carlo error

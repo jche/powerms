@@ -11,7 +11,7 @@ test_that("site_sizes and site_ps work", {
   )
   dat %>%
     dplyr::group_by(sid) %>%
-    dplyr::summarize(p_j = first(p_j)) %>%
+    dplyr::summarize(p_j = dplyr::first(p_j)) %>%
     dplyr::summarize(res = dplyr::setequal(p_j, vec)) %>%
     dplyr::pull(res) %>%
     expect_true()
@@ -49,8 +49,8 @@ test_that("effect_dist works as intended", {
   )
   dat %>%
     dplyr::group_by(sid) %>%
-    dplyr::summarize(alpha_j = first(alpha_j),
-                     tau_j = first(tau_j)) %>%
+    dplyr::summarize(alpha_j = dplyr::first(alpha_j),
+                     tau_j = dplyr::first(tau_j)) %>%
     dplyr::summarize(cor = cor(alpha_j, tau_j)) %>%
     dplyr::pull(cor) %>%
     expect_equal(1)
@@ -72,7 +72,7 @@ test_that("effect_dist works as intended", {
   )
   dat %>%
     dplyr::group_by(sid) %>%
-    dplyr::summarize(tau_j = first(tau_j)) %>%
+    dplyr::summarize(tau_j = dplyr::first(tau_j)) %>%
     dplyr::summarize(skew = skew(tau_j)) %>%
     dplyr::pull(skew) %>%
     expect_gt(1)
@@ -96,9 +96,9 @@ test_that("correlations hold", {
 
   res <- dat %>%
     dplyr::group_by(sid) %>%
-    dplyr::summarize(tau_j = first(tau_j),
-                     n_j = first(n_j),
-                     p_j = first(p_j)) %>%
+    dplyr::summarize(tau_j = dplyr::first(tau_j),
+                     n_j = dplyr::first(n_j),
+                     p_j = dplyr::first(p_j)) %>%
     dplyr::summarize(cor1 = cor(tau_j, n_j),
                      cor2 = cor(tau_j, p_j))
 
@@ -111,7 +111,7 @@ test_that("control sd equals 1", {
 
   dat %>%
     dplyr::summarize(sd = sd(Y0)) %>%
-    pull(sd) %>%
+    dplyr::pull(sd) %>%
     expect_equal(1)
 })
 

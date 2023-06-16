@@ -78,7 +78,7 @@ sim_data <- function(
 
   # generate dataset
   fabricatr::fabricate(
-    sid = add_level(
+    sid = fabricatr::add_level(
       N = J,
       alpha_j = if (intercept_dist == "normal") {
         rnorm(J, mean=alpha, sd=sig_alpha)
@@ -123,10 +123,10 @@ sim_data <- function(
       }
     ),
 
-    i = add_level(
+    i = fabricatr::add_level(
       N = n_j,
       Y0 = if (outcome == "continuous") {
-        draw_normal_icc(
+        fabricatr::draw_normal_icc(
           mean = alpha_j,
           clusters = sid,
           total_sd = 1,
@@ -140,52 +140,9 @@ sim_data <- function(
         rbinom(n_j, size=1, prob=floor_ceil(alpha_j + tau_j))
       },
       Z = rbinom(n_j, size=1, p=p_j),
-      Yobs = ifelse(Z, Y1, Y0)
+      Y = ifelse(Z, Y1, Y0)
     )
   )
-}
-
-if (F) {
-  map_dbl(1:100, function(x) {
-    sim_data(outcome = "continuous",
-             intercept_dist = "normal",
-             effect_dist = "normal") %>%
-      filter(Z==0) %>%
-      summarize(sd = sd(Y0)) %>%
-      pull(sd)
-  }) %>%
-    mean()
-
-  foo <- sim_data(
-    outcome = "binary",
-    intercept_dist = "normal",
-    effect_dist = "normal",
-
-    J = 15,
-    nbar = 1000,
-    vary_site_sizes = F,
-    pbar = 0.5,
-    vary_site_ps = F,
-
-    alpha = 0.175,
-    sig_alpha = 0.01,
-    tau = 0.03,
-    sig_tau = 0.03,
-    a = 1.5,
-    b = 50,
-
-    cor_tau_n = 0,
-    cor_tau_p = 0,
-    ICC = 0.3
-  )
-
-  foo %>%
-    group_by(sid, alpha_j, tau_j, n_j, p_j) %>%
-    summarize(tau = mean(Y1 - Y0),
-              tauhat = mean(Yobs[Z==1]) - mean(Yobs[Z==0])) %>%
-    ggplot(aes(x=tau_j, y=tau)) +
-    geom_point() +
-    geom_abline()
 }
 
 # naming: sim_x_yz

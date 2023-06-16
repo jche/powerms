@@ -72,6 +72,68 @@ summarize_sites <- function(df,
     dplyr::select({{site_id}}, n, tau_hat, se)
 }
 
+# same as summarize_sites, but uses:
+#  - site id sid
+#  - treatment Z
+#  - outcome Y
+summarize_sites_fixed <- function(df, se=c("pooled", "individual")) {
+  se <- match.arg(se)
+
+  # output: tibble with J rows
+  #  - cols: sid & (ybar, n, sd) for tx/co units
+  if (se == "pooled") {
+    sds <- df %>%
+      dplyr::group_by(sid, Z) %>%
+      dplyr::mutate(Y = Y-mean(Y)) %>%
+      dplyr::ungroup() %>%
+      dplyr::group_by(Z) %>%
+      dplyr::summarize(sigma = sd(Y))
+    sd1 <- sds %>%
+      dplyr::filter(Z==1) %>%
+      dplyr::pull(sigma)
+    sd0 <- sds %>%
+      dplyr::filter(Z==0) %>%
+      dplyr::pull(sigma)
+
+    df_full <- df %>%
+      dplyr::group_by(sid, Z) %>%
+      dplyr::summarize(
+        ybar = mean(Y),
+        n = dplyr::n(),
+        .groups = "drop_last") %>%
+      tidyr::pivot_wider(
+        names_from = Z,
+        values_from = c("ybar", "n"),
+        names_sep = "") %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(sd1 = sd1, sd0 = sd0)
+
+  } else if (se == "individual") {
+    df_full <- df %>%
+      dplyr::group_by(sid, Z) %>%
+      dplyr::summarize(
+        ybar = mean(Y),
+        n = dplyr::n(),
+        sd = sd(Y)) %>%
+      tidyr::pivot_wider(
+        names_from = Z,
+        values_from = c("ybar", "n", "sd"),
+        names_sep = "") %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(
+        tau_hat = ybar1 - ybar0,
+        se = sqrt(sd1^2 / n1 + sd0^2 / n0)) %>%
+      dplyr::select(sid, tau_hat, se)
+  }
+
+  df_full %>%
+    dplyr::mutate(
+      n = n1 + n0,
+      tau_hat = ybar1 - ybar0,
+      se = sqrt(sd1^2 / n1 + sd0^2 / n0)) %>%
+    dplyr::select(sid, n, tau_hat, se)
+}
+
 
 run_t_test <- function(sdat, alpha=0.05) {
   stopifnot(dplyr::between(alpha, 0, 1))
@@ -104,7 +166,7 @@ run_mlm <- function(sdat, alpha=0.05) {
   site_effects_norm <- samples_norm$tau_j
 
   sdat %>%
-    dplyr::select(sid, tau_hat) %>%
+    dplyr::select(sid, n, tau_hat) %>%
     dplyr::mutate(
       tau_j_hat = apply(site_effects_norm, 2, mean),
       se_j = apply(site_effects_norm, 2, sd),

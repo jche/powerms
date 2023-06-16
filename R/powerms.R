@@ -6,10 +6,11 @@ powerms <- function(
     sim_data_method,
     se_method = "pooled",
     est_method,
-    tx_var = z,
-    outcome_var = y,
-    site_id = sid,
+    tx_var = "Z",
+    outcome_var = "Y",
+    site_id = "sid",
     num_sims = 100,
+    parallel = F,
     ...) {
   stopifnot(is.function(sim_data_method))
   stopifnot(is.function(est_method))
@@ -23,6 +24,24 @@ powerms <- function(
     args_df <- expand.grid(sim_data_args, stringsAsFactors = F)
   }
 
+  # if no arguments are supplied in sim_data_args,
+  # manually generate args_df using default arguments to sim_data_method
+  if (nrow(args_df) == 0) {
+    args_df <- formals(sim_data_method) %>%
+      as.list() %>%
+      purrr::map(function(x) {
+        if (is.call(x)) {
+          # for vector-valued default arguments,
+          # only grab first (default) element of vector as argument
+          eval(x)[1]
+        } else {
+          x
+        }
+      }) %>%
+      purrr::discard(is.null) %>%
+      as.data.frame()
+  }
+
   if (exists("DEBUGGING")) { browser() }
 
   res_list <- purrr::map(
@@ -33,15 +52,17 @@ powerms <- function(
         sim_data_args = as.list(args_df[i,]),
         se_method = se_method,
         est_method = est_method,
-        tx_var = {{tx_var}},
-        outcome_var = {{outcome_var}},
-        site_id = {{site_id}},
-        num_sims = num_sims) %>%
+        tx_var = tx_var,
+        outcome_var = outcome_var,
+        site_id = site_id,
+        num_sims = num_sims,
+        parallel = parallel) %>%
         dplyr::mutate(sim_id = i, .before = rep_id)
     },
-    .progress = "Running simulations...")
+    .progress = paste("Running", nrow(args_df), "simulation settings..."))
 
   res <- purrr::list_rbind(res_list)
+
   attr(res, "sim_params") <- args_df %>%
     dplyr::mutate(sim_id = 1:dplyr::n(), .before=dplyr::everything())
 

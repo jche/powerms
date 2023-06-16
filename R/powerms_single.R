@@ -15,10 +15,11 @@ powerms_single <- function(
     sim_data_args,
     se_method = "pooled",
     est_method,
-    tx_var = z,
-    outcome_var = y,
-    site_id = sid,
-    num_sims = 100) {
+    tx_var = "Z",
+    outcome_var = "Y",
+    site_id = "sid",
+    num_sims = 100,
+    parallel = F) {
   stopifnot(is.function(sim_data_method))
   stopifnot(is.function(est_method))
 
@@ -33,20 +34,81 @@ powerms_single <- function(
 
   if (exists("DEBUGGING")) { browser() }
 
-  res <- purrr::map(
+  # if (parallel) {
+  #   ncores <- future::availableCores() - 1
+  #   future::plan(future::multisession, workers = ncores)
+  # } else {
+  #   future::plan(future::sequential)
+  # }
+  #
+  # res <- furrr::future_map(
+  #   1:num_sims,
+  #   function(x) {
+  #     sim_data_method %>%
+  #       do.call(sim_data_args) %>%
+  #       summarize_sites_fixed(se = se_method) %>%
+  #       # # !!! curly-curly doesn't work with furrr !!!
+  #       # summarize_sites(se = se_method,
+  #       #                 tx_var = {{tx_var}},
+  #       #                 outcome_var = {{outcome_var}},
+  #       #                 site_id = {{site_id}}) %>%
+  #       est_method() %>%
+  #       dplyr::mutate(rep_id = x) %>%
+  #       dplyr::select(rep_id, everything())
+  #   },
+  #   .progress=T,
+  #   .options = furrr::furrr_options(
+  #     seed = T,
+  #     globals = c("sim_data_method", "sim_data_args", "se_method", "est_method"))
+  # ) %>%
+  #   purrr::list_rbind()
+
+  # res <- purrr::map(
+  #   1:num_sims,
+  #   function(x) {
+  #     sim_data_method %>%
+  #       do.call(sim_data_args) %>%
+  #       summarize_sites_fixed(se = se_method) %>%
+  #       # summarize_sites(se = se_method,
+  #       #                 tx_var = {{tx_var}},
+  #       #                 outcome_var = {{outcome_var}},
+  #       #                 site_id = {{site_id}}) %>%
+  #       est_method() %>%
+  #       dplyr::mutate(rep_id = x) %>%
+  #       dplyr::select(rep_id, everything())
+  #   },
+  #   .progress=T
+  # ) %>%
+  #   purrr::list_rbind()
+
+  if (parallel) {
+    ncores <- future::availableCores() - 1
+    future::plan(future::multisession, workers = ncores)
+  } else {
+    future::plan(future::sequential)
+  }
+
+  res <- furrr::future_map(
     1:num_sims,
     function(x) {
       sim_data_method %>%
         do.call(sim_data_args) %>%
-        summarize_sites(se = se_method,
-                        tx_var = {{tx_var}},
-                        outcome_var = {{outcome_var}},
-                        site_id = {{site_id}}) %>%
+
+        # curly-curly doesn't work with furrr
+        # workaround: manually rename columns to Z, Y, sid
+        #  and use function that assumes use of these names
+        dplyr::rename(
+          "Z" = dplyr::all_of(tx_var),
+          "Y" = dplyr::all_of(outcome_var),
+          "sid" = dplyr::all_of(site_id)
+        ) %>%
+        summarize_sites_fixed(se = se_method) %>%
+
         est_method() %>%
-        dplyr::mutate(rep_id = x) %>%
-        dplyr::select(rep_id, everything())
+        dplyr::mutate(rep_id = x, .before="sid")
     },
-    .progress="Simulating and analyzing datasets..."
+    .progress=T,
+    .options = furrr::furrr_options(seed = T)
   ) %>%
     purrr::list_rbind()
 
@@ -54,38 +116,10 @@ powerms_single <- function(
   attr(res, "est_method") <- paste0(deparse(substitute(est_method)), "()")
   attr(res, "sim_data_args") <- sim_data_args
 
+  # if (parallel) {
+  #   parallel::stopCluster(cl)
+  # }
+
   res
 }
-
-if (F) {
-
-  # NOTE: need to load blkvar dependencies, e.g., dplyr,
-  #  to make blkvar::generate_multilevel_data() work...
-  library(dplyr)
-  foo <- powerms_single(
-    sim_data_method = blkvar::generate_multilevel_data,
-    sim_data_args = list(
-      n.bar = 25,
-      J = 25,
-      p = 0.5,
-      tau.11.star = 0.3,   # Total amount of cross-site treatment variation
-      rho2.0W = 0.1,  # Explanatory power of W for control outcomes
-      rho2.1W = 0.5,  # Explanatory power of W for average treatment impact
-      ICC = 0.7,   # ICC; 1-sigma2.e
-      gamma.00 = 0,
-      gamma.10 = 0.2,
-      zero.corr = F,
-      variable.n = T),
-    se_method = "pooled",
-    est_method = run_t_test,
-    # est_method = run_mlm,
-    tx_var = Z,
-    outcome_var = Yobs,
-    site_id = sid,
-    num_sims = 10
-  )
-
-  summary_powerms_single(foo)
-}
-
 
