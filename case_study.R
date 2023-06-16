@@ -42,14 +42,15 @@ res_norm <- powerms(
   tx_var = Z,
   outcome_var = Yobs,
   site_id = sid,
-  num_sims = 3,
+  num_sims = 100,
 
   outcome = "binary",
   intercept_dist = "normal",
   effect_dist = "normal",
 
-  site_sizes = list(c(551, 928, 895, 1008, 309),
-                    c(551, 412, 343, 173, 464, 544, 499, 396, 197, 116)),
+  # site_sizes = list(c(551, 928, 895, 1008, 309),
+  #                   c(551, 412, 343, 173, 464, 544, 499, 396, 197, 116)),
+  site_sizes = list(c(551, 928, 895, 1008, 309)),
   pbar = 0.5,
   vary_site_ps = F,
 
@@ -57,14 +58,27 @@ res_norm <- powerms(
   sig_alpha = 0.01,
   tau = 0.03,
   sig_tau = c(0.01, 0.02, 0.03, 0.04, 0.05),
-  rho = c(0, 0.3, 0.6),
+  # rho = c(0, 0.3, 0.6),
+  rho = 0,
 
   cor_tau_n = 0,
   cor_tau_p = 0
 )
 
+# replicate Figure 3.10!
 res_norm %>%
-  filter()
+  add_sim_params() %>%
+  force_sid_n_match() %>%
+  filter(rho == 0) %>%
+  group_by(sim_id, sig_tau, rho, sid) %>%
+  summarize(n = first(n),
+            avg_moe = mean(ci_r - ci_l) / 2) %>%
+  ggplot(aes(x=n, y=avg_moe, group=sim_id, color=as.factor(sig_tau))) +
+  geom_point() +
+  geom_line()
+
+# TODO: why does t-test moe vary with sig_tau...?
+#  - A: it's just monte carlo error
 
 summary_powerms_single(res_norm)
 
