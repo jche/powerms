@@ -156,11 +156,24 @@ run_mlm <- function(sdat, alpha=0.05) {
     data = stan_list,
     iter = 2000,
     chains = 4,
-    control = list(max_treedepth = 12,
-                  adapt_delta = 0.95),
+    # control = list(max_treedepth = 12,
+    #               adapt_delta = 0.95),
     verbose = F,
     show_messages = F,
     refresh = 0)
+
+  # https://discourse.mc-stan.org/t/divergent-transitions-a-primer/17099
+  if (rstan::get_num_divergent(fit_norm) > 0) {
+    browser()
+
+    shinystan::launch_shinystan(fit_norm)
+
+    rstan::stan_diag(fit_norm)
+    print(fit_norm)
+
+    bayesplot::mcmc_pairs(fit_norm, pars=c("tau", "sig_tau"))
+  }
+
 
   samples_norm <- rstan::extract(fit_norm)
   site_effects_norm <- samples_norm$tau_j

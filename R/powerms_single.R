@@ -58,7 +58,8 @@ powerms_single <- function(
         summarize_sites_fixed(se = se_method) %>%
 
         est_method() %>%
-        dplyr::mutate(rep_id = x, .before="sid")
+        dplyr::mutate(rep_id = x, .before="sid") %>%
+        dplyr::rename(site_id = "sid")   # set sid back to user-specified site_id
     },
     .progress=T,
     .options = furrr::furrr_options(seed = T)
