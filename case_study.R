@@ -11,7 +11,7 @@ res_schools <- powerms(
   outcome_var = "Y",
   site_id = "sid",
   num_sims = 100,
-  parallel = F,
+  parallel = T,
 
   outcome = "binary",
   intercept_dist = "normal",
@@ -55,7 +55,7 @@ res_states <- powerms(
   outcome_var = "Y",
   site_id = "sid",
   num_sims = 100,
-  parallel = F,
+  parallel = T,
 
   outcome = "binary",
   intercept_dist = "normal",
@@ -96,6 +96,13 @@ if (F) {
   moe_plot()
 }
 
+
+# TODO:
+#  - challenge: want to pass sim data arguments via ...,
+#    but also want to pass arguments for est_method(),
+#    e.g., settings for the priors, significance level, (centered/ncp), etc...
+#  - how to do this with just a single ...?
+# A: force est_method to be the full thing.
 
 # TODO:
 #  - debug stan a bit, see why we're getting divergences
