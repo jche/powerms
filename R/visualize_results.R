@@ -6,7 +6,7 @@
 moe_plot <- function(p, x_axis, grouping=NULL) {
   add_sim_params(p) %>%
     dplyr::group_by({{x_axis}}, {{grouping}}, sim_id) %>%
-    dplyr::summarize(avg_moe = mean(ci_r - ci_l)) %>%
+    dplyr::summarize(avg_moe = mean(ci_r - ci_l, na.rm=T) / 2) %>%
     ggplot2::ggplot(ggplot2::aes(x={{x_axis}}, y=avg_moe,
                                  color={{grouping}}, group={{grouping}})) +
     ggplot2::geom_line() +
@@ -16,13 +16,25 @@ moe_plot <- function(p, x_axis, grouping=NULL) {
 # note: requires unique site sizes
 moe_plot_indiv <- function(p, sid=sid, grouping=NULL) {
 
-  # if a grouping is assigned, color by grouping
-  #  - hacky workaround to needing to use `:=` operator
-  if (!rlang::quo_is_null(rlang::enquo(grouping)) ) {
-    a <- ggplot2::aes(x=n, y=avg_moe, group=sim_id, color=as.factor({{grouping}}))
-  } else {
-    a <- ggplot2::aes(x=n, y=avg_moe, group=sim_id)
-  }
+  # # if a grouping is assigned, color by grouping
+  # #  - hacky workaround to needing to use `:=` operator
+  # if (!rlang::quo_is_null(rlang::enquo(grouping)) ) {
+  #   a <- ggplot2::aes(x=n, y=avg_moe, group=sim_id, color=as.factor({{grouping}}))
+  # } else {
+  #   a <- ggplot2::aes(x=n, y=avg_moe, group=sim_id)
+  # }
+
+  # same as above, without rlang package
+  #  - idea: if we can refer to `grouping` and it is NULL, there is no grouping
+  #    otherwise, it's a name that neds to be passed into curly-curly
+  a <- tryCatch(
+    {if (is.null(grouping)) {
+      ggplot2::aes(x=n, y=avg_moe, group=sim_id)
+    } else {stop()}},
+    error = function(e) {
+      ggplot2::aes(x=n, y=avg_moe, group=sim_id, color=as.factor({{grouping}}))
+    }
+  )
 
   p %>%
     add_sim_params() %>%
@@ -30,7 +42,7 @@ moe_plot_indiv <- function(p, sid=sid, grouping=NULL) {
     dplyr::group_by(sim_id, {{grouping}}, {{sid}}) %>%
     dplyr::summarize(
       n = dplyr::first(n),
-      avg_moe = mean(ci_r - ci_l) / 2) %>%
+      avg_moe = mean(ci_r - ci_l, na.rm=T) / 2) %>%
     ggplot2::ggplot(a) +
     ggplot2::geom_point() +
     ggplot2::geom_line() +

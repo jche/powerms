@@ -61,7 +61,7 @@ powerms_single <- function(
         dplyr::mutate(rep_id = x, .before="sid") %>%
         dplyr::rename(site_id = "sid")   # set sid back to user-specified site_id
     },
-    .progress=T,
+    # .progress=T,
     .options = furrr::furrr_options(seed = T)
   ) %>%
     purrr::list_rbind()
