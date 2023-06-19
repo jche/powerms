@@ -143,16 +143,21 @@ run_t_test <- function(sdat, alpha=0.05) {
       ci_r = tau_hat + qnorm(1-alpha) * se)
 }
 
-run_mlm <- function(sdat, alpha=0.05) {
+run_mlm <- function(sdat, alpha=0.05, ncp=T) {
   # make dataset for bayesian models
   stan_list <- list(
     J = nrow(sdat),
     tau_j_hat = sdat$tau_hat,
     se_j = sdat$se)
 
-  # fit model
+  # fit normal model (non-centered parameterization or centered parameterization)
+  if (ncp) {
+    stan_model <- stanmodels$normal_mlm
+  } else {
+    stan_model <- stanmodels$normal_mlm_centered
+  }
   fit_norm <- rstan::sampling(
-    stanmodels$normal_mlm,
+    stan_model,
     data = stan_list,
     iter = 2000,
     chains = 4,
@@ -162,18 +167,17 @@ run_mlm <- function(sdat, alpha=0.05) {
     show_messages = F,
     refresh = 0)
 
-  # https://discourse.mc-stan.org/t/divergent-transitions-a-primer/17099
-  if (rstan::get_num_divergent(fit_norm) > 0) {
-    browser()
-
-    shinystan::launch_shinystan(fit_norm)
-
-    rstan::stan_diag(fit_norm)
-    print(fit_norm)
-
-    bayesplot::mcmc_pairs(fit_norm, pars=c("tau", "sig_tau"))
-  }
-
+  # # https://discourse.mc-stan.org/t/divergent-transitions-a-primer/17099
+  # if (rstan::get_num_divergent(fit_norm) > 0) {
+  #   browser()
+  #
+  #   shinystan::launch_shinystan(fit_norm)
+  #
+  #   rstan::stan_diag(fit_norm)
+  #   print(fit_norm)
+  #
+  #   bayesplot::mcmc_pairs(fit_norm, pars=c("tau", "sig_tau"))
+  # }
 
   samples_norm <- rstan::extract(fit_norm)
   site_effects_norm <- samples_norm$tau_j

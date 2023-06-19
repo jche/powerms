@@ -13,9 +13,11 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 
 RcppExport SEXP _rcpp_module_boot_stan_fit4normal_mlm_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4normal_mlm_centered_mod();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_stan_fit4normal_mlm_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4normal_mlm_mod, 0},
+    {"_rcpp_module_boot_stan_fit4normal_mlm_centered_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4normal_mlm_centered_mod, 0},
     {NULL, NULL, 0}
 };
 
