@@ -142,6 +142,36 @@ sim_data <- function(
       Z = rbinom(n_j, size=1, p=p_j),
       Y = ifelse(Z, Y1, Y0)
     )
-  )
+  ) %>%
+    ensure_one_tx_co()
 }
+
+
+# assumes names sid, Z
+ensure_one_tx_co <- function(d) {
+  d %>%
+    split(f = d$sid) %>%
+    purrr::map(function(x) {
+      stopifnot("Only one unit in site! Cannot ensure a treated and a control unit." =
+                  nrow(x) > 1)
+      s <- sum(x$Z)
+      if (s == 0 | s == nrow(x)) {
+        temp <- x$Z
+        temp[1] <- as.numeric(!temp[1])
+        x$Z <- temp
+      }
+      x
+    }) %>%
+    purrr::list_rbind()
+}
+
+
+
+
+
+
+
+
+
+
 

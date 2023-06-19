@@ -64,6 +64,9 @@ summarize_sites <- function(df,
       dplyr::select({{site_id}}, tau_hat, se)
   }
 
+  stopifnot("Some sites have no treated units or no control units; use a different dataset" =
+              sum(is.na(df_full$n0) + is.na(df_full$n1)) == 0 )
+
   df_full %>%
     dplyr::mutate(
       n = n1 + n0,
@@ -125,6 +128,9 @@ summarize_sites_fixed <- function(df, se=c("pooled", "individual")) {
         se = sqrt(sd1^2 / n1 + sd0^2 / n0)) %>%
       dplyr::select(sid, tau_hat, se)
   }
+
+  stopifnot("Some sites have no treated units or no control units; use a different dataset" =
+              sum(is.na(df_full$n0) + is.na(df_full$n1)) == 0 )
 
   df_full %>%
     dplyr::mutate(

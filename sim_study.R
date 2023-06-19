@@ -8,8 +8,8 @@ fig3.6 <- powerms(
   tx_var = "Z",
   outcome_var = "Y",
   site_id = "sid",
-  num_sims = 100,
-  parallel = T,
+  num_sims = 7,
+  parallel = F,
 
   outcome = "continuous",
   intercept_dist = "normal",
@@ -35,24 +35,14 @@ fig3.6 <- powerms(
   cor_tau_p = 0
 )
 
-readr::write_rds(fig3.6, "sim_study_36.rds")
+readr::write_rds(fig3.6, "sim_study_mlm36.rds")
 
 # replicate Figure 3.9
-fig3.6 <- readr::read_rds("sim_study_36.rds")
+fig3.6 <- readr::read_rds("sim_study_mlm36.rds")
 pal <- wesanderson::wes_palette("Zissou1", 3, type="continuous")
 
 moe_plot(fig3.6, x_axis=nbar) +
   ggplot2::labs(
     y = "Average margin of error",
     x = "Average site size")
-
-# # NOTE: can return NA if there is not at least one tx and one co unit in site...
-# add_sim_params(fig3.6) %>%
-#   dplyr::group_by(nbar) %>%
-#   dplyr::summarize(num_na = sum(is.na(tau_hat))) %>%
-#   print(n=50)
-
-
-
-
 
