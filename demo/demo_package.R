@@ -6,7 +6,7 @@ library( tidyverse )
 
 
 
-fig3.6 <- powerms(
+demo_sim <- powerms(
   sim_data_method = sim_data,
   se_method = "pooled",
   est_method = powerms:::run_mlm,
@@ -20,7 +20,7 @@ fig3.6 <- powerms(
   intercept_dist = "normal",
   effect_dist = "normal",
 
-  J = c(10, 25, 100),
+  J = c(10, 25),
   nbar = seq(5, 200, by=50),
   vary_site_sizes = T,
   pbar = 0.5,
@@ -40,14 +40,30 @@ fig3.6 <- powerms(
   cor_tau_p = 0
 )
 
-class( fig3.6 )
-head( fig3.6 )
+readr::write_rds(demo_sim, here::here( "demo/demo_results.rds") )
 
-readr::write_rds(fig3.6, here::here( "demo/demo_results.rds") )
 
-# replicate Figure 3.9 (in the cut down form)
-fig3.6 <- readr::read_rds( here::here( "demo/demo_results.rds" ) )
 
+##### Look at results in various ways #####
+
+
+demo_sim <- readr::read_rds( here::here( "demo/demo_results.rds" ) )
+
+print( demo_sim )
+
+class( demo_sim )
+
+head( demo_sim )
+
+summary( demo_sim )
+
+a = summary( demo_sim )
+ggplot( a, aes( nbar, mean_se, col=as.factor(J) ) ) +
+  geom_line()
+
+
+
+##### replicate Figure 3.9 (in the cut down form) #####
 
 # TODO: Is this getting used?  Need to be passed?
 pal <- wesanderson::wes_palette("Zissou1", 3, type="continuous")
@@ -56,13 +72,13 @@ pal <- wesanderson::wes_palette("Zissou1", 3, type="continuous")
 # TODO: What happens when grouping is not set?  Should this average
 # over everything?  I changed the code to do this, but fix if this is
 # wrong! -Luke
-moe_plot(fig3.6, x_axis=nbar) +
+moe_plot(demo_sim, x_axis=nbar) +
   ggplot2::labs(
     y = "Average margin of error",
     x = "Average site size")
 
 
-moe_plot(fig3.6, x_axis=nbar, grouping = J) +
+moe_plot(demo_sim, x_axis=nbar, grouping = J) +
   ggplot2::labs(
     y = "Average margin of error",
     x = "Average site size")

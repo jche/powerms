@@ -1,3 +1,6 @@
+
+
+
 test_that("function runs", {
   foo <- powerms_single(
     sim_data_method = sim_data,
@@ -14,6 +17,8 @@ test_that("function runs", {
                 dplyr::pull(avg_moe),
               "double")
 })
+
+
 
 test_that("renaming important variables works", {
 
