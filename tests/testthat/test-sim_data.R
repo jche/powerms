@@ -16,6 +16,7 @@ test_that("site_sizes and site_ps work", {
     dplyr::pull(res) %>%
     expect_true()
 
+
   # checking site_sizes
   size_vec <- c(17,32,50,43,22)
   dat <- sim_data(
@@ -25,6 +26,13 @@ test_that("site_sizes and site_ps work", {
     site_sizes = size_vec
   )
   expect_equal(nrow(dat), sum(size_vec))
+
+
+  # Site summary code works?
+  ss <- summarize_sites( dat, tx_var = Z, outcome_var = Y, site_id = sid )
+  expect_true( all( sort( ss$n )  == sort( size_vec ) ) )
+
+
 
   # checking when inputs conflict
   expect_error(
@@ -36,6 +44,9 @@ test_that("site_sizes and site_ps work", {
       site_ps = seq(0.5,0.9, by=0.1)
     )
   )
+
+
+
 })
 
 # ISSUE: some of these tests are stochastic...
@@ -105,6 +116,10 @@ test_that("correlations hold", {
   expect_lt(res$cor1, -0.9)
   expect_gt(res$cor2, 0.9)
 })
+
+
+
+
 
 test_that("control sd equals 1", {
   dat <- sim_data()

@@ -1,11 +1,34 @@
 
-# conduct power analyses for a user-specified grid of settings
 
-# NOTE: to use powerms locally while developing, need to devtools::install()
-#  the full package! (furrr doesn't play nicely, some globals issue...)
-#  - see https://github.com/DavisVaughan/furrr/issues/95
 
-# sim_data_args is list of all settings to gridsearch over
+#' conduct power analyses for a user-specified grid of settings
+#'
+#' NOTE: to use powerms locally while developing, need to
+#' devtools::install() the full package! (furrr doesn't play nicely,
+#' some globals issue...), as described in
+#' https://github.com/DavisVaughan/furrr/issues/95
+#'
+#' @param sim_data_method: method for simulating data, default is the
+#'   sim_data() method in the package which uses fabricatr to simulate
+#'   a multisite trial
+#' @param se_method = "pooled" or "individual": how to compute
+#'   standard errors for the site-aggregated estimates
+#' @param est_method: function for analyzing site-aggregated
+#'   estimates, built-in functions are run_mlm and run_t_test
+#' @param tx_var strings indicating variable names
+#' @param outcome_var strings indicating variable names
+#' @param site_id: strings indicating variable names, default "Z" "Y"
+#'   and "sid" (unfortunately curly-curly doesn't work with
+#'   parallelization so these are string variable names not just the
+#'   names)
+#' @param num_sims: number of simulations to run
+#' @param parallel: whether to turn on parallelization (via furrr)
+#' @param ...: additional arguments to sim_data_method. See
+#'   sim_data_method. Can input multiple arguments to a parameter,
+#'   e.g., n.bar = c(10, 20, 30), in which case the fully expanded
+#'   grid of parameters will be simulated and assembled
+#'
+#' @export
 powerms <- function(
     sim_data_method,
     se_method = "pooled",
@@ -16,6 +39,7 @@ powerms <- function(
     num_sims = 100,
     parallel = F,
     ...) {
+
   stopifnot(is.function(sim_data_method))
   stopifnot(is.function(est_method))
 
@@ -69,6 +93,8 @@ powerms <- function(
 
   attr(res, "sim_params") <- args_df %>%
     dplyr::mutate(sim_id = 1:dplyr::n(), .before=dplyr::everything())
+
+  #class( res ) <- c( "powerms_result", class( res ) )
 
   res
 }

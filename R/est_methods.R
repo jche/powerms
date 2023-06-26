@@ -1,15 +1,22 @@
 
-# functions to produce table of site-level estimates (and standard errors),
-#  given an individual-level dataset
-#  - input: individual-level dataset
+#' functions to produce table of site-level estimates (and standard errors),
+#'
+#' @param df  an individual-level dataset.
+#'
+#'  @return  - input: individual-level dataset
 #  - output: input dataset, with:
 #     - site-level ests
 #     - site-level ses
 #     - site-level alpha% interval estimates
 
-# input df: needs sid, z, y
-# output df: sid, tau_hat, se
-# TODO: confirm that this works fine with binary outcomes
+#' Summarize sites
+#'
+#' input df: needs sid, z, y
+#' output df: sid, tau_hat, se
+#'
+#' TODO: confirm that this works fine with binary outcomes
+#'
+#' @export
 summarize_sites <- function(df,
                             tx_var,
                             outcome_var,
@@ -75,10 +82,12 @@ summarize_sites <- function(df,
     dplyr::select({{site_id}}, n, tau_hat, se)
 }
 
-# same as summarize_sites, but uses:
-#  - site id sid
-#  - treatment Z
-#  - outcome Y
+#' same as summarize_sites, but uses:
+#'  - site id sid
+#'  - treatment Z
+#'  - outcome Y
+#'
+#' @export
 summarize_sites_fixed <- function(df, se=c("pooled", "individual")) {
   se <- match.arg(se)
 
@@ -141,6 +150,15 @@ summarize_sites_fixed <- function(df, se=c("pooled", "individual")) {
 }
 
 
+
+
+
+#' Method of analysis
+#'
+#' These functions are the planned analysis functions used by the
+#' power simulator.
+#'
+#' @export
 run_t_test <- function(sdat, alpha=0.05) {
   stopifnot(dplyr::between(alpha, 0, 1))
   sdat %>%
@@ -149,6 +167,11 @@ run_t_test <- function(sdat, alpha=0.05) {
       ci_r = tau_hat + qnorm(1-alpha) * se)
 }
 
+#' Multilevel modeling for analysis
+#'
+#' @rdname run_t_test
+#'
+#' @export
 run_mlm <- function(sdat, alpha=0.05, ncp=T) {
   # make dataset for bayesian models
   stan_list <- list(

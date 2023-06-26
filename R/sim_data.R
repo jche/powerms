@@ -1,8 +1,13 @@
 
-# functions to simulate datasets
-#  - input: all parameters of dataset
-#  - output: individual-level dataset
 
+#' Simulate a dataset
+#'
+#' functions to simulate datasets:
+#'
+#'  - input: all parameters of dataset
+#'  - output: individual-level dataset
+#'
+#' @export
 sim_data <- function(
     outcome = c("continuous", "binary"),
     intercept_dist = c("normal"),

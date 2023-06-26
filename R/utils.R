@@ -1,6 +1,10 @@
 
-# input: powerms_single() output
-# output: useful results and description of powerms_single() run
+#' Make summary of output
+#'
+#' input: powerms_single() output
+#' output: useful results and description of powerms_single() run
+#'
+#' @export
 summary_powerms_single <- function(p) {
   cat(paste(
     "Average margin of error:",
@@ -27,8 +31,14 @@ summary_powerms_single <- function(p) {
 
 
 
-# input: powerms() output
-# output: output with simulation settings as columns
+#' Add simulation parameters to results of powerms
+#'
+#' @param p A powerms_result object.
+#'
+#' @return The result as a dataframe with new columns corresponding to
+#'   the simulation factors (previously stored as an attributed).
+#'
+#' @export
 add_sim_params <- function(p) {
   p %>%
     dplyr::left_join(attr(p, "sim_params"),

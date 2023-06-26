@@ -1,15 +1,18 @@
 
-# conduct power analysis for a single setting
-
-### sim_data_method:
-# input: sim_data_args (unlisted)
-# output: individual-level dataset
-
 ### est_method:
 # input: site-level dataset
 # output: site-level dataset, with:
 #   - estimated tau_j_hat
 #   - lower & upper bounds of alpha% CI
+
+
+#' conduct power analysis for a single setting
+#'
+#' @param sim_data_args (unlisted)
+#' @return individual-level dataset
+#'
+#' @export
+#'
 powerms_single <- function(
     sim_data_method,
     sim_data_args,
