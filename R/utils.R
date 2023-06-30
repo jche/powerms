@@ -1,7 +1,4 @@
 
-
-
-
 # pulled from blkvar package
 #  - minimum site size: 4
 #  - sd(nj) is roughly: nbar * sqrt(size_ratio)

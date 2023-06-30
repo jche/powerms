@@ -4,15 +4,12 @@
 library( powerms )
 library( tidyverse )
 
-
-
+set.seed(90210)
 demo_sim <- powerms(
-  sim_data_method = sim_data,
+  sim_data_method = powerms:::sim_data,
+  formula = Y ~ Z | sid,
   se_method = "pooled",
   est_method = powerms:::run_mlm,
-  tx_var = "Z",
-  outcome_var = "Y",
-  site_id = "sid",
   num_sims = 3,
   parallel = F,
 
@@ -39,13 +36,10 @@ demo_sim <- powerms(
   cor_tau_n = 0,
   cor_tau_p = 0
 )
-
 readr::write_rds(demo_sim, here::here( "demo/demo_results.rds") )
 
 
-
 ##### Look at results in various ways #####
-
 
 demo_sim <- readr::read_rds( here::here( "demo/demo_results.rds" ) )
 
@@ -62,21 +56,12 @@ ggplot( a, aes( nbar, mean_se, col=as.factor(J) ) ) +
   geom_line()
 
 
-
 ##### replicate Figure 3.9 (in the cut down form) #####
 
-# TODO: Is this getting used?  Need to be passed?
-pal <- wesanderson::wes_palette("Zissou1", 3, type="continuous")
-
-
-# TODO: What happens when grouping is not set?  Should this average
-# over everything?  I changed the code to do this, but fix if this is
-# wrong! -Luke
 moe_plot(demo_sim, x_axis=nbar) +
   ggplot2::labs(
     y = "Average margin of error",
     x = "Average site size")
-
 
 moe_plot(demo_sim, x_axis=nbar, grouping = J) +
   ggplot2::labs(
@@ -84,10 +69,7 @@ moe_plot(demo_sim, x_axis=nbar, grouping = J) +
     x = "Average site size")
 
 
-
-
 #### Data simulation ####
-
 
 # This shows the DGP code and how we can get some multisite simulated
 # data.
@@ -104,5 +86,5 @@ dat <- sim_data(
 head( dat )
 length( unique( dat$sid ) )
 
-summarize_sites( dat, tx_var = Z, outcome_var = Y, site_id = sid )
+summarize_sites( dat, formula = Y ~ Z | sid )
 

@@ -76,7 +76,7 @@ run_mlm <- function(sdat, alpha=0.05, ncp=T) {
   site_effects_norm <- samples_norm$tau_j
 
   sdat %>%
-    dplyr::select(sid, n, tau_hat) %>%
+    dplyr::select(-se) %>%
     dplyr::mutate(
       tau_j_hat = apply(site_effects_norm, 2, mean),
       se_j = apply(site_effects_norm, 2, sd),

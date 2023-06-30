@@ -29,7 +29,7 @@ test_that("site_sizes and site_ps work", {
 
 
   # Site summary code works?
-  ss <- summarize_sites( dat, tx_var = Z, outcome_var = Y, site_id = sid )
+  ss <- summarize_sites( dat )
   expect_true( all( sort( ss$n )  == sort( size_vec ) ) )
 
 

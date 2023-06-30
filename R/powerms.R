@@ -8,34 +8,31 @@
 #' some globals issue...), as described in
 #' https://github.com/DavisVaughan/furrr/issues/95
 #'
-#' @param sim_data_method: method for simulating data, default is the
+#' @param sim_data_method method for simulating data, default is the
 #'   sim_data() method in the package which uses fabricatr to simulate
 #'   a multisite trial
+#' @param formula formula indicating outcome, treatment, and site ID
+#'   column names from simulated data, in the following form:
+#'   `outcome ~ treatment | site ID`. Default `Y ~ Z | sid`.
 #' @param se_method = "pooled" or "individual": how to compute
 #'   standard errors for the site-aggregated estimates
-#' @param est_method: function for analyzing site-aggregated
-#'   estimates, built-in functions are run_mlm and run_t_test
-#' @param tx_var strings indicating variable names
-#' @param outcome_var strings indicating variable names
-#' @param site_id: strings indicating variable names, default "Z" "Y"
-#'   and "sid" (unfortunately curly-curly doesn't work with
-#'   parallelization so these are string variable names not just the
-#'   names)
-#' @param num_sims: number of simulations to run
-#' @param parallel: whether to turn on parallelization (via furrr)
-#' @param ...: additional arguments to sim_data_method. See
-#'   sim_data_method. Can input multiple arguments to a parameter,
-#'   e.g., n.bar = c(10, 20, 30), in which case the fully expanded
-#'   grid of parameters will be simulated and assembled
+#' @param est_method function for analyzing site-aggregated estimates
+#'   `tau_hat` with standard errors `se`, outputs left (`ci_l`) and
+#'   right (`ci_r`) endpoints of interval estimates for each site.
+#'   Built-in functions are run_mlm() and run_t_test()
+#' @param num_sims number of simulations to run
+#' @param parallel whether to turn on parallelization (via furrr)
+#' @param ... additional arguments to sim_data_method. Can input
+#'   multiple arguments to a parameter, e.g., n.bar = c(10, 20, 30),
+#'   in which case the fully expanded grid of parameters will be
+#'   simulated and assembled
 #'
 #' @export
 powerms <- function(
     sim_data_method,
+    formula = NULL,
     se_method = "pooled",
     est_method,
-    tx_var = "Z",
-    outcome_var = "Y",
-    site_id = "sid",
     num_sims = 100,
     parallel = F,
     ...) {
@@ -70,19 +67,15 @@ powerms <- function(
       as.data.frame()
   }
 
-  if (exists("DEBUGGING")) { browser() }
-
   res_list <- purrr::map(
     1:nrow(args_df),
     function(i) {
       powerms_single(
         sim_data_method = sim_data_method,
+        formula = formula,
         sim_data_args = as.list(args_df[i,]),
         se_method = se_method,
         est_method = est_method,
-        tx_var = tx_var,
-        outcome_var = outcome_var,
-        site_id = site_id,
         num_sims = num_sims,
         parallel = parallel) %>%
         dplyr::mutate(sim_id = i, .before = rep_id)

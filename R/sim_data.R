@@ -118,7 +118,6 @@ sim_data <- function(
       },
       p_j = {
         if (sd(site_ps) > 0) {
-          # induce correlation between tau_j and p_j
           p_j_temp <- site_ps[order(
             cor_tau_p^2 * site_ps + (1-cor_tau_p^2) * rnorm(J, sd=sd(site_ps)) )]
           p_j_temp[ order(order(sign(cor_tau_p)*tau_j)) ]

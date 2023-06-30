@@ -6,44 +6,39 @@
 \usage{
 powerms(
   sim_data_method,
+  formula = NULL,
   se_method = "pooled",
   est_method,
-  tx_var = "Z",
-  outcome_var = "Y",
-  site_id = "sid",
   num_sims = 100,
   parallel = F,
   ...
 )
 }
 \arguments{
-\item{se_method}{= "pooled" or "individual": how to compute
-standard errors for the site-aggregated estimates}
-
-\item{tx_var}{strings indicating variable names}
-
-\item{outcome_var}{strings indicating variable names}
-
-\item{sim_data_method:}{method for simulating data, default is the
+\item{sim_data_method}{method for simulating data, default is the
 sim_data() method in the package which uses fabricatr to simulate
 a multisite trial}
 
-\item{est_method:}{function for analyzing site-aggregated
-estimates, built-in functions are run_mlm and run_t_test}
+\item{formula}{formula indicating outcome, treatment, and site ID
+column names from simulated data, in the following form:
+\verb{outcome ~ treatment | site ID}. Default \code{Y ~ Z | sid}.}
 
-\item{site_id:}{strings indicating variable names, default "Z" "Y"
-and "sid" (unfortunately curly-curly doesn't work with
-parallelization so these are string variable names not just the
-names)}
+\item{se_method}{= "pooled" or "individual": how to compute
+standard errors for the site-aggregated estimates}
 
-\item{num_sims:}{number of simulations to run}
+\item{est_method}{function for analyzing site-aggregated estimates
+\code{tau_hat} with standard errors \code{se}, outputs left (\code{ci_l}) and
+right (\code{ci_r}) endpoints of interval estimates for each site.
+Built-in functions are run_mlm() and run_t_test()}
 
-\item{parallel:}{whether to turn on parallelization (via furrr)}
+\item{num_sims}{number of simulations to run}
 
-\item{...:}{additional arguments to sim_data_method. See
-sim_data_method. Can input multiple arguments to a parameter,
-e.g., n.bar = c(10, 20, 30), in which case the fully expanded
-grid of parameters will be simulated and assembled}
+\item{parallel}{whether to turn on parallelization (via furrr)}
+
+\item{...}{additional arguments to sim_data_method. Can input
+multiple arguments to a parameter, e.g., n.bar = c(10, 20, 30),
+in which case the fully expanded grid of parameters will be
+simulated and assembled}
 }
 \description{
 NOTE: to use powerms locally while developing, need to

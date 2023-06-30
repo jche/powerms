@@ -4,24 +4,21 @@
 \alias{summarize_sites}
 \title{functions to produce table of site-level estimates (and standard errors),}
 \usage{
-summarize_sites(
-  df,
-  tx_var,
-  outcome_var,
-  site_id,
-  se = c("pooled", "individual")
-)
+summarize_sites(df, formula = NULL, se = c("pooled", "individual"))
 }
 \arguments{
-\item{df}{an individual-level dataset.
+\item{df}{individual-level dataset}
 
-@return  - input: individual-level dataset
-Summarize sites
+\item{formula}{formula indicating outcome, treatment, and site ID
+column names from dataset, in the following form:
+\verb{outcome ~ treatment | site ID}. Default \code{Y ~ Z | sid}.}
 
-input df: needs sid, z, y
-output df: sid, tau_hat, se
-
-TODO: confirm that this works fine with binary outcomes}
+\item{se}{method for computing site-level standard errors,
+options "pooled" or "individual"}
+}
+\value{
+site-level dataset with estimated treatment effects \code{tau_hat},
+standard errors \code{se}
 }
 \description{
 functions to produce table of site-level estimates (and standard errors),

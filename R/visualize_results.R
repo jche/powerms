@@ -4,13 +4,12 @@
 
 #' Plot results of powerms
 #'
-#' given powerms() output, generate reasonable plot that shows average
+#' Given powerms() output, generate reasonable plot that shows average
 #' margin of error, averaging over various simulation factors.
 #'
 #' @param p Results from a powerms call
-#' @param x_axis Factor to make x-axis.  Name of variable in passed
-#'   dataframe or simulation parameter, e.g., `nbar`.  No string
-#'   quotations. Will margenalize over the rest of results.
+#' @param x_axis Unquoted name of simulation factor to plot on x-axis, e.g., `nbar`.
+#'   moe_plot() will marginalize over the remaining factors.
 #' @param grouping Second factor to make a color, for multiple lines on the plot.
 #'
 #' @return ggplot object of desired plot
@@ -19,10 +18,6 @@
 #'
 #' @export
 moe_plot <- function(p, x_axis, grouping=NULL) {
-#  agg <- add_sim_params(p) %>%
-#    dplyr::group_by({{x_axis}}, {{grouping}}, sim_id) %>%
-#    dplyr::summarize(avg_moe = mean(ci_r - ci_l, na.rm=T) / 2)
-
   agg <- add_sim_params(p) %>%
       dplyr::group_by({{x_axis}}, {{grouping}}) %>%
       dplyr::summarize(avg_moe = mean(ci_r - ci_l, na.rm=T) / 2)

@@ -6,7 +6,12 @@
 \usage{
 summary_powerms_single(p)
 }
+\arguments{
+\item{p}{output from powerms_single()}
+}
+\value{
+prints useful results and description of powerms_single() run
+}
 \description{
-input: powerms_single() output
-output: useful results and description of powerms_single() run
+Make summary of output
 }

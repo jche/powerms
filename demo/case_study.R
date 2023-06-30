@@ -7,11 +7,9 @@
 # Run simulation for specific scenario with specific site sizes.
 res_schools <- powerms(
   sim_data_method = sim_data,
+  formula = Y ~ Z | sid,
   se_method = "pooled",
   est_method = powerms:::run_mlm,
-  tx_var = "Z",
-  outcome_var = "Y",
-  site_id = "sid",
   num_sims = 100,
   parallel = TRUE,
 
@@ -60,11 +58,9 @@ moe_plot_indiv(res_schools, grouping=sig_tau) +
 
 res_states <- powerms(
   sim_data_method = sim_data,
+  formula = Y ~ Z | sid,
   se_method = "pooled",
   est_method = run_mlm,
-  tx_var = "Z",
-  outcome_var = "Y",
-  site_id = "sid",
   num_sims = 100,
   parallel = T,
 

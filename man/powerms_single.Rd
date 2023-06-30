@@ -6,18 +6,35 @@
 \usage{
 powerms_single(
   sim_data_method,
+  formula = NULL,
   sim_data_args,
   se_method = "pooled",
   est_method,
-  tx_var = "Z",
-  outcome_var = "Y",
-  site_id = "sid",
   num_sims = 100,
   parallel = F
 )
 }
 \arguments{
-\item{sim_data_args}{(unlisted)}
+\item{sim_data_method}{method for simulating data, default is the
+sim_data() method in the package which uses fabricatr to simulate
+a multisite trial}
+
+\item{formula}{indicating outcome, treatment, and site ID
+column names from simulated data, in the following form:}
+
+\item{sim_data_args}{list of arguments for sim_data_method}
+
+\item{se_method}{= "pooled" or "individual": how to compute
+standard errors for the site-aggregated estimates}
+
+\item{est_method}{function for analyzing site-aggregated estimates
+\code{tau_hat} with standard errors \code{se}, outputs left (\code{ci_l}) and
+right (\code{ci_r}) endpoints of interval estimates for each site.
+Built-in functions are run_mlm() and run_t_test()}
+
+\item{num_sims}{number of simulations to run}
+
+\item{parallel}{whether to turn on parallelization (via furrr)}
 }
 \value{
 individual-level dataset

@@ -68,13 +68,13 @@ print.powermsresult <- function(x, ...)
         nrow(ss),
         reps )
 
-  scat( "\tNumber sites: %.1f (%d -- %d)\n",
+  scat( "\tAvg number of sites: %.1f (%d -- %d)\n",
         mean( ss$J ), min(ss$J), max(ss$J) )
 
-  scat( "\nSample sim stats:\n" )
+  scat( "\nSample data-generating parameters:\n" )
   print( head( ss, 5 ), row.names = FALSE )
 
-  scat( "\nSample simulation stats:\n" )
+  scat( "\nSample simulation results:\n" )
   print( head( x, 5 ), row.names = FALSE )
 
   invisible( x )

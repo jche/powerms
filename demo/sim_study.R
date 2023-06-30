@@ -5,11 +5,9 @@ library( powerms )
 
 fig3.6 <- powerms(
   sim_data_method = sim_data,
+  formula = Y ~ Z | sid,
   se_method = "pooled",
   est_method = powerms:::run_mlm,
-  tx_var = "Z",
-  outcome_var = "Y",
-  site_id = "sid",
   num_sims = 7,
   parallel = F,
 
