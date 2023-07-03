@@ -1,4 +1,6 @@
 
+# helper functions for sim_data()
+
 # pulled from blkvar package
 #  - minimum site size: 4
 #  - sd(nj) is roughly: nbar * sqrt(size_ratio)
@@ -45,26 +47,3 @@ floor_ceil <- function(x, floor=0, ceil=1) {
   }
   pmax(pmin(x, ceil), floor)
 }
-
-# helper function: forces each sid to correspond to single site size
-#  assumes a bunch of things, e.g., distinct n for each site,
-#   same n values for all reps and sims, etc.
-force_sid_n_match <- function(p, sid=sid) {
-  sid_key <- p %>%
-    dplyr::filter(sim_id == 1, rep_id == 1) %>%
-    dplyr::select({{sid}}, n)
-
-  p %>%
-    dplyr::select(-{{sid}}) %>%
-    dplyr::left_join(sid_key, by="n") %>%
-    dplyr::relocate({{sid}}, .after="rep_id") %>%
-    dplyr::group_by(sim_id, rep_id) %>%
-    dplyr::arrange({{sid}}, .by_group=T) %>%
-    dplyr::ungroup()
-}
-
-
-
-
-
-

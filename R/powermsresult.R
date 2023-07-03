@@ -68,8 +68,10 @@ print.powermsresult <- function(x, ...)
         nrow(ss),
         reps )
 
-  scat( "\tAvg number of sites: %.1f (%d -- %d)\n",
-        mean( ss$J ), min(ss$J), max(ss$J) )
+  if (!is.null(ss$J)) {
+    scat( "\tAvg number of sites: %.1f (%d -- %d)\n",
+          mean( ss$J ), min(ss$J), max(ss$J) )
+  }
 
   scat( "\nSample data-generating parameters:\n" )
   print( head( ss, 5 ), row.names = FALSE )

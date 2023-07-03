@@ -69,6 +69,42 @@ moe_plot(demo_sim, x_axis=nbar, grouping = J) +
     x = "Average site size")
 
 
+
+# demonstrate use of individually specified sites -------------------------
+
+set.seed(1600)
+demo_sim_indiv <- powerms(
+  sim_data_method = powerms:::sim_data,
+  formula = Y ~ Z | sid,
+  se_method = "pooled",
+  est_method = powerms:::run_mlm,
+  num_sims = 5,
+  parallel = F,
+
+  outcome = "continuous",
+  intercept_dist = "normal",
+  effect_dist = "normal",
+
+  site_sizes = list(seq(10,100,by=10)),
+  site_ps = list(seq(0.1,1,by=0.1)),
+
+  alpha = 0,
+  sig_alpha = 0.2,
+  tau = 0.2,
+  sig_tau = c(0.1, 0.2),
+  ICC = 0.2,
+
+  rho = 0,
+  cor_tau_n = 0,
+  cor_tau_p = 0
+)
+
+moe_plot_indiv(demo_sim_indiv)
+moe_plot_indiv(demo_sim_indiv, grouping=sig_tau)
+
+
+
+
 #### Data simulation ####
 
 # This shows the DGP code and how we can get some multisite simulated

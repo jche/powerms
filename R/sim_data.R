@@ -1,4 +1,10 @@
 
+# TODO: handle tying nj and pj to a site...
+#  - currently, we just hackily tie unique nj values to each site,
+#    and pj is still randomly assigned.
+#  - note if nj and pj are tied to sites, then we can't have distinct
+#    values for cor_tau_n and cor_tau_p
+
 
 #' Simulate a dataset
 #'

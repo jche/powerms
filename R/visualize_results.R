@@ -32,13 +32,12 @@ moe_plot <- function(p, x_axis, grouping=NULL) {
 
 #' plot results
 #'
-#'  note: requires unique site sizes
+#'  note: requires unique site sizes!!!
 #'
 #' @export
 moe_plot_indiv <- function(p, sid=sid, grouping=NULL) {
 
   # # if a grouping is assigned, color by grouping
-  # #  - hacky workaround to needing to use `:=` operator
   # if (!rlang::quo_is_null(rlang::enquo(grouping)) ) {
   #   a <- ggplot2::aes(x=n, y=avg_moe, group=sim_id, color=as.factor({{grouping}}))
   # } else {
@@ -46,21 +45,17 @@ moe_plot_indiv <- function(p, sid=sid, grouping=NULL) {
   # }
 
   # same as above, without rlang package
-  #  - idea: if we can refer to `grouping` and it is NULL, there is no grouping
-  #    otherwise, it's a name that neds to be passed into curly-curly
   a <- tryCatch(
-    {if (is.null(grouping)) {
-      ggplot2::aes(x=n, y=avg_moe, group=sim_id)
-    } else {stop()}},
+    if (is.null(grouping)) { ggplot2::aes(x=n, y=avg_moe) },
     error = function(e) {
-      ggplot2::aes(x=n, y=avg_moe, group=sim_id, color=as.factor({{grouping}}))
+      ggplot2::aes(x=n, y=avg_moe, group={{grouping}}, color=as.factor({{grouping}}))
     }
   )
 
   agg <- p %>%
     add_sim_params() %>%
     force_sid_n_match(sid={{sid}}) %>%
-    dplyr::group_by(sim_id, {{grouping}}, {{sid}}) %>%
+    dplyr::group_by({{grouping}}, {{sid}}) %>%
     dplyr::summarize(
       n = dplyr::first(n),
       avg_moe = mean(ci_r - ci_l, na.rm=T) / 2)
@@ -73,6 +68,23 @@ moe_plot_indiv <- function(p, sid=sid, grouping=NULL) {
       axis.line.x = ggplot2::element_line("black"),
       axis.line.y = ggplot2::element_line("black")
     )
+}
+
+# helper function: forces each sid to correspond to single site size
+#  assumes a bunch of things, e.g., distinct n for each site,
+#   same n values for all reps and sims, etc.
+force_sid_n_match <- function(p, sid=sid) {
+  sid_key <- p %>%
+    dplyr::filter(sim_id == 1, rep_id == 1) %>%
+    dplyr::select({{sid}}, n)
+
+  p %>%
+    dplyr::select(-{{sid}}) %>%
+    dplyr::left_join(sid_key, by="n") %>%
+    dplyr::relocate({{sid}}, .after="rep_id") %>%
+    dplyr::group_by(sim_id, rep_id) %>%
+    dplyr::arrange({{sid}}, .by_group=T) %>%
+    dplyr::ungroup()
 }
 
 
