@@ -2,19 +2,34 @@
 # pulled from blkvar package
 #  - minimum site size: 4
 #  - sd(nj) is roughly: nbar * sqrt(size_ratio)
-gen_site_sizes <- function(nbar, J, size_ratio) {
+gen_site_sizes <- function(nbar, J, size_ratio=1/3, vary=T) {
   stopifnot("Average site size (nbar) must be greater than 4" = nbar > 4)
 
-  N <- 1 + 3 * size_ratio
-  p <- (N - 1)/N
-  small <- rbinom(J, 1, p)
-  Y <- runif(J)
-  Y <- nbar * ifelse(small, Y, Y * (N - 1) + 1)
+  if (vary) {
+    N <- 1 + 3 * size_ratio
+    p <- (N - 1)/N
+    small <- rbinom(J, 1, p)
+    Y <- runif(J)
+    Y <- nbar * ifelse(small, Y, Y * (N - 1) + 1)
 
-  # ensure all sites have at least 4 observations
-  nj <- round(Y)
-  nj[nj < 4] <- 4
+    # ensure all sites have at least 4 observations
+    nj <- round(Y)
+    nj[nj < 4] <- 4
+  } else {
+    nj <- rep(nbar, J)
+  }
   nj
+}
+
+gen_site_ps <- function(pbar, J, p_ratio=0.75, vary=T) {
+  stopifnot(0 <= pbar & pbar <= 1)
+  if (vary) {
+    ths <- min(pbar, 1 - pbar) * p_ratio
+    site_ps <- runif(J, pbar - ths, pbar + ths)
+  } else {
+    site_ps <- rep(pbar, J)
+  }
+  site_ps
 }
 
 floor_ceil <- function(x, floor=0, ceil=1) {

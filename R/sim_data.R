@@ -51,34 +51,19 @@ sim_data <- function(
   stopifnot("cor_tau_n must be in (-1,1)" = cor_tau_n >= -1 & cor_tau_n <= 1)
   stopifnot("cor_tau_p must be in (-1,1)" = cor_tau_p >= -1 & cor_tau_p <= 1)
 
-  # if we've specified either site_sizes or site_ps,
-  # need to ensure that J is correct before generating the other.
-
-  # ensure J matches with manually specified site sizes/ps
-  if (!is.null(site_sizes) | !is.null(site_ps)) {
-    if (!is.null(site_sizes) & !is.null(site_ps)) {
-      stopifnot(length(site_sizes) == length(site_ps))
-    }
-    J <- max(length(site_sizes), length(site_ps))
-  }
-
-  # generate raw vector of site sizes
-  if (is.null(site_sizes)) {
-    if (vary_site_sizes) {
-      site_sizes <- gen_site_sizes(nbar, J, size_ratio)
-    } else {
-      site_sizes <- rep(nbar, J)
-    }
-  }
-
-  # generate raw vector of site proportions treated
-  if (is.null(site_ps)) {
-    if (vary_site_ps) {
-      ths <- min(pbar, 1 - pbar) * 0.75
-      site_ps <- runif(J, pbar - ths, pbar + ths)
-    } else {
-      site_ps <- rep(pbar, J)
-    }
+  # generate site_sizes and/or site_ps, as needed
+  if (is.null(site_sizes) & is.null(site_ps)) {
+    site_sizes <- gen_site_sizes(nbar, J, size_ratio, vary=vary_site_sizes)
+    site_ps <- gen_site_ps(pbar, J, vary=vary_site_ps)
+  } else if (is.null(site_ps)) {
+    J <- length(site_sizes)
+    site_ps <- gen_site_ps(pbar, J, vary=vary_site_ps)
+  } else if (is.null(site_sizes)) {
+    J <- length(site_ps)
+    site_sizes <- gen_site_sizes(nbar, J, size_ratio, vary=vary_site_sizes)
+  } else {
+    stopifnot(length(site_sizes) == length(site_ps))
+    J <- length(site_sizes)
   }
 
   # generate dataset
@@ -168,13 +153,6 @@ ensure_one_tx_co <- function(d) {
     }) %>%
     purrr::list_rbind()
 }
-
-
-
-
-
-
-
 
 
 
