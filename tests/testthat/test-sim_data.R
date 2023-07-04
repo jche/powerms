@@ -1,3 +1,4 @@
+
 test_that("site_sizes and site_ps work", {
 
   # checking site_ps
@@ -33,7 +34,6 @@ test_that("site_sizes and site_ps work", {
   expect_true( all( sort( ss$n )  == sort( size_vec ) ) )
 
 
-
   # checking when inputs conflict
   expect_error(
     sim_data(
@@ -45,11 +45,8 @@ test_that("site_sizes and site_ps work", {
     )
   )
 
-
-
 })
 
-# ISSUE: some of these tests are stochastic...
 test_that("effect_dist works as intended", {
   dat <- sim_data(
     outcome = "continuous",
@@ -89,7 +86,6 @@ test_that("effect_dist works as intended", {
     expect_gt(1)
 })
 
-# ISSUE: stochastic tests...
 test_that("correlations hold", {
   dat <- sim_data(
     outcome = "continuous",
@@ -117,8 +113,73 @@ test_that("correlations hold", {
   expect_gt(res$cor2, 0.9)
 })
 
+test_that("manually specified sizes and ps stick together", {
+  dat <- sim_data(
+    outcome = "continuous",
+    intercept_dist = "normal",
+    effect_dist = "normal",
+    site_sizes = 5:10,
+    site_ps = (5:10)/15)
 
+  temp <- dat %>%
+    dplyr::group_by(sid) %>%
+    dplyr::summarise(n_j = dplyr::first(n_j),
+                     p_j = dplyr::first(p_j))
+  expect_equal(temp$n_j, 5:10)
+  expect_equal(temp$p_j, (5:10)/15)
+})
 
+test_that("correlations hold when site_ps specified", {
+  dat <- sim_data(
+    outcome = "continuous",
+    intercept_dist = "normal",
+    effect_dist = "normal",
+    J = 100,
+    nbar = 50,
+    vary_site_sizes = T,
+    site_ps = (26:125)/150,
+
+    cor_tau_n = -1,
+    cor_tau_p = 1
+  )
+
+  res <- dat %>%
+    dplyr::group_by(sid) %>%
+    dplyr::summarize(tau_j = dplyr::first(tau_j),
+                     n_j = dplyr::first(n_j),
+                     p_j = dplyr::first(p_j)) %>%
+    dplyr::summarize(cor1 = cor(tau_j, n_j),
+                     cor2 = cor(tau_j, p_j))
+
+  expect_lt(res$cor1, -0.9)
+  expect_gt(res$cor2, 0.9)
+})
+
+test_that("correlations hold when site_sizes specified", {
+  dat <- sim_data(
+    outcome = "continuous",
+    intercept_dist = "normal",
+    effect_dist = "normal",
+    J = 100,
+    site_sizes = 51:150,
+    pbar = 0.5,
+    vary_site_ps = T,
+
+    cor_tau_n = -1,
+    cor_tau_p = 1
+  )
+
+  res <- dat %>%
+    dplyr::group_by(sid) %>%
+    dplyr::summarize(tau_j = dplyr::first(tau_j),
+                     n_j = dplyr::first(n_j),
+                     p_j = dplyr::first(p_j)) %>%
+    dplyr::summarize(cor1 = cor(tau_j, n_j),
+                     cor2 = cor(tau_j, p_j))
+
+  expect_lt(res$cor1, -0.9)
+  expect_gt(res$cor2, 0.9)
+})
 
 
 test_that("control sd equals 1", {

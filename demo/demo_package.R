@@ -85,8 +85,8 @@ demo_sim_indiv <- powerms(
   intercept_dist = "normal",
   effect_dist = "normal",
 
-  site_sizes = list(seq(10,100,by=10)),
-  site_ps = list(seq(0.1,1,by=0.1)),
+  site_sizes = list(seq(10,90,by=10)),
+  site_ps = list(seq(0.1,0.9,by=0.1)),
 
   alpha = 0,
   sig_alpha = 0.2,
@@ -99,13 +99,14 @@ demo_sim_indiv <- powerms(
   cor_tau_p = 0
 )
 
+readr::write_rds(demo_sim_indiv, here::here( "demo/demo_results_indiv.rds") )
+demo_sim_indiv <- readr::read_rds( here::here( "demo/demo_results_indiv.rds" ) )
+
 moe_plot_indiv(demo_sim_indiv)
 moe_plot_indiv(demo_sim_indiv, grouping=sig_tau)
 
 
-
-
-#### Data simulation ####
+# data simulation ---------------------------------------------------------
 
 # This shows the DGP code and how we can get some multisite simulated
 # data.

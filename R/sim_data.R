@@ -1,17 +1,12 @@
 
-# TODO: handle tying nj and pj to a site...
-#  - currently, we just hackily tie unique nj values to each site,
-#    and pj is still randomly assigned.
-#  - note if nj and pj are tied to sites, then we can't have distinct
-#    values for cor_tau_n and cor_tau_p
-
-
 #' Simulate a dataset
 #'
 #' functions to simulate datasets:
 #'
 #'  - input: all parameters of dataset
 #'  - output: individual-level dataset
+#'
+#'  if site_sizes or site_ps specified, tie it to site ID, in order!
 #'
 #' @export
 sim_data <- function(
@@ -57,67 +52,55 @@ sim_data <- function(
   stopifnot("cor_tau_n must be in (-1,1)" = cor_tau_n >= -1 & cor_tau_n <= 1)
   stopifnot("cor_tau_p must be in (-1,1)" = cor_tau_p >= -1 & cor_tau_p <= 1)
 
-  # generate site_sizes and/or site_ps, as needed
-  if (is.null(site_sizes) & is.null(site_ps)) {
-    site_sizes <- gen_site_sizes(nbar, J, size_ratio, vary=vary_site_sizes)
-    site_ps <- gen_site_ps(pbar, J, vary=vary_site_ps)
-  } else if (is.null(site_ps)) {
-    J <- length(site_sizes)
-    site_ps <- gen_site_ps(pbar, J, vary=vary_site_ps)
-  } else if (is.null(site_sizes)) {
-    J <- length(site_ps)
-    site_sizes <- gen_site_sizes(nbar, J, size_ratio, vary=vary_site_sizes)
-  } else {
+  # compute appropriate J value
+  if (!(is.null(site_sizes) & is.null(site_ps))) {
+    J <- max(length(site_sizes), length(site_ps))
+  }
+  if (!is.null(site_sizes) & !is.null(site_ps)) {
     stopifnot(length(site_sizes) == length(site_ps))
-    J <- length(site_sizes)
   }
 
-  # generate dataset
+  # generate site intercepts, effects, sizes, and/or tx probabilities,
+  # as needed, with appropriate correlations
+  site_params <- gen_site_params(
+    J, intercept_dist, effect_dist,
+    alpha=alpha, sig_alpha=sig_alpha,
+    tau=tau, sig_tau=sig_tau, rho=rho,
+    a=a, b=b)
+  site_intercepts <- site_params$alpha_j
+  site_taus <- site_params$tau_j
+
+  if (is.null(site_sizes) & is.null(site_ps)) {
+    site_sizes <- gen_site_sizes(nbar, J, size_ratio, vary=vary_site_sizes) %>%
+      induce_correlation(site_taus, cor_tau_n)
+    site_ps <- gen_site_ps(pbar, J, vary=vary_site_ps) %>%
+      induce_correlation(site_taus, cor_tau_p)
+  } else if (is.null(site_ps)) {
+    site_taus <- site_taus %>%
+      induce_correlation(site_sizes, cor_tau_n)
+    site_ps <- gen_site_ps(pbar, J, vary=vary_site_ps) %>%
+      induce_correlation(site_taus, cor_tau_p)
+  } else if (is.null(site_sizes)) {
+    site_taus <- site_taus %>%
+      induce_correlation(site_ps, cor_tau_p)
+    site_sizes <- gen_site_sizes(nbar, J, size_ratio, vary=vary_site_sizes) %>%
+      induce_correlation(site_taus, cor_tau_n)
+  } else {
+    if (cor_tau_n != cor_tau_p) {
+      stop("User assigned fixed site sizes and treatment probabilities;
+           cannot induce separate cor_tau_n and cor_tau_p values!")
+    }
+    site_taus <- site_taus %>%
+      induce_correlation(site_sizes, cor_tau_n)
+  }
+
   fabricatr::fabricate(
     sid = fabricatr::add_level(
       N = J,
-      alpha_j = if (intercept_dist == "normal") {
-        rnorm(J, mean=alpha, sd=sig_alpha)
-      } else {
-        stop("Non-normal intercept distributions not currently implemented")
-      },
-
-      tau_j = if (effect_dist == "normal") {
-        # generate tau_j, potentially correlated with alpha_j
-        mu <- tau + rho*sig_tau/sig_alpha * (alpha_j-alpha)
-        var <- (1-rho^2) * sig_tau^2
-        rnorm(J, mean=mu, sd=sqrt(var))
-      } else if (effect_dist == "gamma") {
-        stopifnot("Gamma effect distribution requires parameter a" = !is.null(a))
-        stopifnot("Gamma effect distribution requires parameter b" = !is.null(b))
-        if (rho != 0) {
-          warning("Correlation between intercept and effect not implemented for Gamma effect distribution!")
-        }
-        rgamma(J, shape=a, rate=b)
-      },
-
-      n_j = {
-        if (sd(site_sizes) > 0) {
-          # induce correlation between tau_j and n_j
-          n_j_temp <- site_sizes[order(
-            cor_tau_n^2 * site_sizes + (1-cor_tau_n^2) * rnorm(J, sd=sd(site_sizes)) )]
-          # magic hack: avoids sorting tau_j
-          n_j_temp[order(order(sign(cor_tau_n) * tau_j))]
-        } else {
-          site_sizes
-        }
-      },
-      p_j = {
-        if (sd(site_ps) > 0) {
-          p_j_temp <- site_ps[order(
-            cor_tau_p^2 * site_ps + (1-cor_tau_p^2) * rnorm(J, sd=sd(site_ps)) )]
-          p_j_temp[ order(order(sign(cor_tau_p)*tau_j)) ]
-        } else {
-          site_ps
-        }
-      }
-    ),
-
+      alpha_j = site_intercepts,
+      tau_j = site_taus,
+      n_j = site_sizes,
+      p_j = site_ps),
     i = fabricatr::add_level(
       N = n_j,
       Y0 = if (outcome == "continuous") {
@@ -133,33 +116,15 @@ sim_data <- function(
         Y0 + tau_j
       } else {
         rbinom(n_j, size=1, prob=floor_ceil(alpha_j + tau_j))
-      },
-      Z = rbinom(n_j, size=1, p=p_j),
-      Y = ifelse(Z, Y1, Y0)
+      }
     )
   ) %>%
-    ensure_one_tx_co()
+    assign_treatment()
 }
 
-
-# assumes names sid, Z
-ensure_one_tx_co <- function(d) {
+assign_treatment <- function(d) {
   d %>%
-    split(f = d$sid) %>%
-    purrr::map(function(x) {
-      stopifnot("Only one unit in site! Cannot ensure a treated and a control unit." =
-                  nrow(x) > 1)
-      s <- sum(x$Z)
-      if (s == 0 | s == nrow(x)) {
-        temp <- x$Z
-        temp[1] <- as.numeric(!temp[1])
-        x$Z <- temp
-      }
-      x
-    }) %>%
-    purrr::list_rbind()
+    dplyr::mutate(
+      Z = randomizr::block_ra(blocks = sid, prob_unit = p_j),
+      Y = ifelse(Z, Y1, Y0))
 }
-
-
-
-
