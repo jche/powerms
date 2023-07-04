@@ -5,6 +5,8 @@ data{
     int<lower=0> J;             // number of sites
     vector[J] tau_j_hat;        // observed site-specific mean
     vector<lower=0>[J] se_j;    // observed site-specific sd
+    real<lower=0> psd_tau;       // sd of tau hyperprior, e.g., 0.1
+    real<lower=0> psd_sig_tau;   // sd of sig_tau hyperprior, e.g., 0.1
 }
 
 parameters{
@@ -21,8 +23,8 @@ transformed parameters{
 
 model{
     // some weakly informative priors
-    tau ~ normal(0, 0.1);
-    sig_tau ~ normal(0, 0.1);
+    tau ~ normal(0, psd_tau);
+    sig_tau ~ normal(0, psd_sig_tau);
 
     eta ~ normal(0,1);
     tau_j_hat ~ normal(tau_j, se_j);

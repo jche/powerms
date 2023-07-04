@@ -41,7 +41,9 @@ run_mlm <- function(sdat, alpha=0.05, ncp=T) {
   stan_list <- list(
     J = nrow(sdat),
     tau_j_hat = sdat$tau_hat,
-    se_j = sdat$se)
+    se_j = sdat$se,
+    psd_tau = 0.1,
+    psd_sig_tau = 0.1)
 
   # fit normal model (non-centered parameterization or centered parameterization)
   if (ncp) {

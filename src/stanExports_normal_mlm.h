@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_normal_mlm");
-    reader.add_event(37, 35, "end", "model_normal_mlm");
+    reader.add_event(39, 37, "end", "model_normal_mlm");
     return reader;
 }
 #include <stan_meta_header.hpp>
@@ -43,6 +43,8 @@ private:
         int J;
         vector_d tau_j_hat;
         vector_d se_j;
+        double psd_tau;
+        double psd_sig_tau;
 public:
     model_normal_mlm(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -101,17 +103,31 @@ public:
                 se_j(j_1__) = vals_r__[pos__++];
             }
             check_greater_or_equal(function__, "se_j", se_j, 0);
+            current_statement_begin__ = 8;
+            context__.validate_dims("data initialization", "psd_tau", "double", context__.to_vec());
+            psd_tau = double(0);
+            vals_r__ = context__.vals_r("psd_tau");
+            pos__ = 0;
+            psd_tau = vals_r__[pos__++];
+            check_greater_or_equal(function__, "psd_tau", psd_tau, 0);
+            current_statement_begin__ = 9;
+            context__.validate_dims("data initialization", "psd_sig_tau", "double", context__.to_vec());
+            psd_sig_tau = double(0);
+            vals_r__ = context__.vals_r("psd_sig_tau");
+            pos__ = 0;
+            psd_sig_tau = vals_r__[pos__++];
+            check_greater_or_equal(function__, "psd_sig_tau", psd_sig_tau, 0);
             // initialize transformed data variables
             // execute transformed data statements
             // validate transformed data
             // validate, set parameter ranges
             num_params_r__ = 0U;
             param_ranges_i__.clear();
-            current_statement_begin__ = 11;
-            num_params_r__ += 1;
-            current_statement_begin__ = 12;
+            current_statement_begin__ = 13;
             num_params_r__ += 1;
             current_statement_begin__ = 14;
+            num_params_r__ += 1;
+            current_statement_begin__ = 16;
             validate_non_negative_index("eta", "J", J);
             num_params_r__ += J;
         } catch (const std::exception& e) {
@@ -131,7 +147,7 @@ public:
         (void) pos__; // dummy call to supress warning
         std::vector<double> vals_r__;
         std::vector<int> vals_i__;
-        current_statement_begin__ = 11;
+        current_statement_begin__ = 13;
         if (!(context__.contains_r("tau")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable tau missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("tau");
@@ -144,7 +160,7 @@ public:
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable tau: ") + e.what()), current_statement_begin__, prog_reader__());
         }
-        current_statement_begin__ = 12;
+        current_statement_begin__ = 14;
         if (!(context__.contains_r("sig_tau")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable sig_tau missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("sig_tau");
@@ -157,7 +173,7 @@ public:
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable sig_tau: ") + e.what()), current_statement_begin__, prog_reader__());
         }
-        current_statement_begin__ = 14;
+        current_statement_begin__ = 16;
         if (!(context__.contains_r("eta")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable eta missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("eta");
@@ -199,21 +215,21 @@ public:
         try {
             stan::io::reader<local_scalar_t__> in__(params_r__, params_i__);
             // model parameters
-            current_statement_begin__ = 11;
+            current_statement_begin__ = 13;
             local_scalar_t__ tau;
             (void) tau;  // dummy to suppress unused var warning
             if (jacobian__)
                 tau = in__.scalar_constrain(lp__);
             else
                 tau = in__.scalar_constrain();
-            current_statement_begin__ = 12;
+            current_statement_begin__ = 14;
             local_scalar_t__ sig_tau;
             (void) sig_tau;  // dummy to suppress unused var warning
             if (jacobian__)
                 sig_tau = in__.scalar_lb_constrain(0, lp__);
             else
                 sig_tau = in__.scalar_lb_constrain(0);
-            current_statement_begin__ = 14;
+            current_statement_begin__ = 16;
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> eta;
             (void) eta;  // dummy to suppress unused var warning
             if (jacobian__)
@@ -221,18 +237,18 @@ public:
             else
                 eta = in__.vector_constrain(J);
             // transformed parameters
-            current_statement_begin__ = 18;
+            current_statement_begin__ = 20;
             validate_non_negative_index("tau_j", "J", J);
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> tau_j(J);
             stan::math::initialize(tau_j, DUMMY_VAR__);
             stan::math::fill(tau_j, DUMMY_VAR__);
             // transformed parameters block statements
-            current_statement_begin__ = 19;
+            current_statement_begin__ = 21;
             stan::math::assign(tau_j, add(tau, multiply(sig_tau, eta)));
             // validate transformed parameters
             const char* function__ = "validate transformed params";
             (void) function__;  // dummy to suppress unused var warning
-            current_statement_begin__ = 18;
+            current_statement_begin__ = 20;
             size_t tau_j_j_1_max__ = J;
             for (size_t j_1__ = 0; j_1__ < tau_j_j_1_max__; ++j_1__) {
                 if (stan::math::is_uninitialized(tau_j(j_1__))) {
@@ -242,13 +258,13 @@ public:
                 }
             }
             // model body
-            current_statement_begin__ = 24;
-            lp_accum__.add(normal_log<propto__>(tau, 0, 0.1));
-            current_statement_begin__ = 25;
-            lp_accum__.add(normal_log<propto__>(sig_tau, 0, 0.1));
+            current_statement_begin__ = 26;
+            lp_accum__.add(normal_log<propto__>(tau, 0, psd_tau));
             current_statement_begin__ = 27;
+            lp_accum__.add(normal_log<propto__>(sig_tau, 0, psd_sig_tau));
+            current_statement_begin__ = 29;
             lp_accum__.add(normal_log<propto__>(eta, 0, 1));
-            current_statement_begin__ = 28;
+            current_statement_begin__ = 30;
             lp_accum__.add(normal_log<propto__>(tau_j_hat, tau_j, se_j));
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -326,13 +342,13 @@ public:
         if (!include_tparams__ && !include_gqs__) return;
         try {
             // declare and define transformed parameters
-            current_statement_begin__ = 18;
+            current_statement_begin__ = 20;
             validate_non_negative_index("tau_j", "J", J);
             Eigen::Matrix<double, Eigen::Dynamic, 1> tau_j(J);
             stan::math::initialize(tau_j, DUMMY_VAR__);
             stan::math::fill(tau_j, DUMMY_VAR__);
             // do transformed parameters statements
-            current_statement_begin__ = 19;
+            current_statement_begin__ = 21;
             stan::math::assign(tau_j, add(tau, multiply(sig_tau, eta)));
             if (!include_gqs__ && !include_tparams__) return;
             // validate transformed parameters
@@ -347,22 +363,22 @@ public:
             }
             if (!include_gqs__) return;
             // declare and define generated quantities
-            current_statement_begin__ = 33;
+            current_statement_begin__ = 35;
             double eta_new;
             (void) eta_new;  // dummy to suppress unused var warning
             stan::math::initialize(eta_new, DUMMY_VAR__);
             stan::math::fill(eta_new, DUMMY_VAR__);
             stan::math::assign(eta_new,normal_rng(0, 1, base_rng__));
-            current_statement_begin__ = 34;
+            current_statement_begin__ = 36;
             double y_site_pred;
             (void) y_site_pred;  // dummy to suppress unused var warning
             stan::math::initialize(y_site_pred, DUMMY_VAR__);
             stan::math::fill(y_site_pred, DUMMY_VAR__);
             stan::math::assign(y_site_pred,(tau + (sig_tau * eta_new)));
             // validate, write generated quantities
-            current_statement_begin__ = 33;
+            current_statement_begin__ = 35;
             vars__.push_back(eta_new);
-            current_statement_begin__ = 34;
+            current_statement_begin__ = 36;
             vars__.push_back(y_site_pred);
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());

@@ -7,5 +7,5 @@
 moe_plot_indiv(p, sid = sid, grouping = NULL)
 }
 \description{
-note: requires unique site sizes
+note: requires unique site sizes!!!
 }

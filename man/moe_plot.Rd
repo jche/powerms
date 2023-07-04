@@ -9,9 +9,8 @@ moe_plot(p, x_axis, grouping = NULL)
 \arguments{
 \item{p}{Results from a powerms call}
 
-\item{x_axis}{Factor to make x-axis.  Name of variable in passed
-dataframe or simulation parameter, e.g., \code{nbar}.  No string
-quotations. Will margenalize over the rest of results.}
+\item{x_axis}{Unquoted name of simulation factor to plot on x-axis, e.g., \code{nbar}.
+moe_plot() will marginalize over the remaining factors.}
 
 \item{grouping}{Second factor to make a color, for multiple lines on the plot.}
 }
@@ -19,6 +18,6 @@ quotations. Will margenalize over the rest of results.}
 ggplot object of desired plot
 }
 \description{
-given powerms() output, generate reasonable plot that shows average
+Given powerms() output, generate reasonable plot that shows average
 margin of error, averaging over various simulation factors.
 }
