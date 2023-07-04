@@ -17,6 +17,9 @@ NULL
 
 #' Individual t-test method for analysis
 #'
+#' @param sdat site-aggregated dataset with site-level effect estimates `tau_j_hat` and site-level SEs `se_j`
+#' @param alpha significance level for interval estimates
+#'
 #' @rdname estimation_methods
 #' @export
 run_t_test <- function(sdat, alpha=0.05) {
@@ -33,17 +36,23 @@ run_t_test <- function(sdat, alpha=0.05) {
 
 #' Multilevel modeling for analysis
 #'
+#' @param sdat site-aggregated dataset with site-level effect estimates `tau_j_hat` and site-level SEs `se_j`
+#' @param alpha significance level for interval estimates
+#' @param psd_tau sd for normal prior on average of site-level treatment effects
+#' @param psd_sig_tau sd for half-normal prior on sd of site-level treatment effects
+#' @param ncp use non-centered parameterization? Set to F if data are very highly informative
+#'
 #' @rdname estimation_methods
 #'
 #' @export
-run_mlm <- function(sdat, alpha=0.05, ncp=T) {
+run_mlm <- function(sdat, alpha=0.05, psd_tau = 0.1, psd_sig_tau = 0.1, ncp=T) {
   # make dataset for bayesian models
   stan_list <- list(
     J = nrow(sdat),
     tau_j_hat = sdat$tau_hat,
     se_j = sdat$se,
-    psd_tau = 0.1,
-    psd_sig_tau = 0.1)
+    psd_tau = psd_tau,
+    psd_sig_tau = psd_sig_tau)
 
   # fit normal model (non-centered parameterization or centered parameterization)
   if (ncp) {

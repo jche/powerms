@@ -8,11 +8,18 @@
 \usage{
 run_t_test(sdat, alpha = 0.05)
 
-run_mlm(sdat, alpha = 0.05, ncp = T)
+run_mlm(sdat, alpha = 0.05, psd_tau = 0.1, psd_sig_tau = 0.1, ncp = T)
 }
 \arguments{
-\item{sdat}{Site-statistics fit to a multisite dataset to analyze
-(as dataframe, one row per site)}
+\item{sdat}{site-aggregated dataset with site-level effect estimates \code{tau_j_hat} and site-level SEs \code{se_j}}
+
+\item{alpha}{significance level for interval estimates}
+
+\item{psd_tau}{sd for normal prior on average of site-level treatment effects}
+
+\item{psd_sig_tau}{sd for half-normal prior on sd of site-level treatment effects}
+
+\item{ncp}{use non-centered parameterization? Set to F if data are very highly informative}
 }
 \description{
 These functions are the planned analysis functions used by the

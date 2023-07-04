@@ -8,6 +8,27 @@
 #'
 #'  if site_sizes or site_ps specified, tie it to site ID, in order!
 #'
+#' @param outcome class of outcome; "continuous" or "binary"
+#' @param intercept_dist distribution of site-level intercepts: currently needs to be "normal"
+#' @param effect_dist distribution of site-level treatment effects: "normal" or "gamma"
+#' @param J number of sites
+#' @param site_sizes vector of fixed site sizes; if NULL, use nbar and vary_site_sizes to generate site sizes
+#' @param nbar average site size
+#' @param vary_site_sizes should site sizes vary?
+#' @param size_ratio parameter controlling variation in site sizes
+#' @param site_ps vector of fixed site treatment proportions; if NULL, use pbar and vary_site_ps to generate site treatment proportions
+#' @param pbar average proportion treated across all sites
+#' @param vary_site_ps should sites vary in their proportion treated?
+#' @param alpha cross-site average of site intercepts
+#' @param tau cross-site average of site treatment effects
+#' @param sig_tau cross-site standard deviation of site treatment effects
+#' @param rho correlation of site intercepts and site treatment effects
+#' @param a (for "gamma" effect distribution) a parameter for gamma distribution
+#' @param b (for "gamma" effect distribution) b parameter for gamma distribution
+#' @param cor_tau_n approximate correlation to induce between site sizes and site treatment effects
+#' @param cor_tau_p approximate correlation to induce between site treatment proportions and site treatment effects
+#' @param ICC intracluster correlation coefficient; simulation is in effect-size units, so ICC determines variance of site-level intercepts
+#'
 #' @export
 sim_data <- function(
     outcome = c("continuous", "binary"),
@@ -29,7 +50,6 @@ sim_data <- function(
 
     # intercept distribution parameters
     alpha = 0,
-    sig_alpha = sqrt(0.2),
 
     # effect distribution parameters
     tau = 0.2,
@@ -64,7 +84,7 @@ sim_data <- function(
   # as needed, with appropriate correlations
   site_params <- gen_site_params(
     J, intercept_dist, effect_dist,
-    alpha=alpha, sig_alpha=sig_alpha,
+    alpha=alpha, sig_alpha=sqrt(ICC),
     tau=tau, sig_tau=sig_tau, rho=rho,
     a=a, b=b)
   site_intercepts <- site_params$alpha_j

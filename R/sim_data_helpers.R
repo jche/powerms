@@ -21,6 +21,7 @@ gen_site_params <- function(J,
 
   # generate intercepts
   if (intercept_dist == "normal") {
+    # alpha_j <- MASS::mvrnorm(n=J, mu=alpha, Sigma=sig_alpha^2, empirical=T)
     alpha_j <- rnorm(J, mean=alpha, sd=sig_alpha)
   } else {
     stop("Non-normal intercept distributions not currently implemented")

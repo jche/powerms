@@ -17,7 +17,6 @@ sim_data(
   pbar = 0.5,
   vary_site_ps = F,
   alpha = 0,
-  sig_alpha = sqrt(0.2),
   tau = 0.2,
   sig_tau = sqrt(0.2),
   rho = 0,
@@ -28,6 +27,47 @@ sim_data(
   ICC = 0.3
 )
 }
+\arguments{
+\item{outcome}{class of outcome; "continuous" or "binary"}
+
+\item{intercept_dist}{distribution of site-level intercepts: currently needs to be "normal"}
+
+\item{effect_dist}{distribution of site-level treatment effects: "normal" or "gamma"}
+
+\item{J}{number of sites}
+
+\item{site_sizes}{vector of fixed site sizes; if NULL, use nbar and vary_site_sizes to generate site sizes}
+
+\item{nbar}{average site size}
+
+\item{vary_site_sizes}{should site sizes vary?}
+
+\item{size_ratio}{parameter controlling variation in site sizes}
+
+\item{site_ps}{vector of fixed site treatment proportions; if NULL, use pbar and vary_site_ps to generate site treatment proportions}
+
+\item{pbar}{average proportion treated across all sites}
+
+\item{vary_site_ps}{should sites vary in their proportion treated?}
+
+\item{alpha}{cross-site average of site intercepts}
+
+\item{tau}{cross-site average of site treatment effects}
+
+\item{sig_tau}{cross-site standard deviation of site treatment effects}
+
+\item{rho}{correlation of site intercepts and site treatment effects}
+
+\item{a}{(for "gamma" effect distribution) a parameter for gamma distribution}
+
+\item{b}{(for "gamma" effect distribution) b parameter for gamma distribution}
+
+\item{cor_tau_n}{approximate correlation to induce between site sizes and site treatment effects}
+
+\item{cor_tau_p}{approximate correlation to induce between site treatment proportions and site treatment effects}
+
+\item{ICC}{intracluster correlation coefficient; simulation is in effect-size units, so ICC determines variance of site-level intercepts}
+}
 \description{
 functions to simulate datasets:
 }
@@ -36,4 +76,6 @@ functions to simulate datasets:
 \item input: all parameters of dataset
 \item output: individual-level dataset
 }
+
+if site_sizes or site_ps specified, tie it to site ID, in order!
 }
