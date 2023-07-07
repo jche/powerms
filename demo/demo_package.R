@@ -85,11 +85,11 @@ demo_sim_indiv <- powerms(
   intercept_dist = "normal",
   effect_dist = "normal",
 
-  site_sizes = list(seq(10,90,by=10)),
+  # site_sizes = list(seq(10,90,by=10)),
+  site_sizes = list(c(10,20,20,20,30,40,70,80,90)),
   site_ps = list(seq(0.1,0.9,by=0.1)),
 
   alpha = 0,
-  sig_alpha = 0.2,
   tau = 0.2,
   sig_tau = c(0.1, 0.2),
   ICC = 0.2,

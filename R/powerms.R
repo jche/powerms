@@ -87,7 +87,8 @@ powerms <- function(
   attr(res, "sim_params") <- args_df %>%
     dplyr::mutate(sim_id = 1:dplyr::n(), .before=dplyr::everything())
 
-  class( res ) <- c( "powermsresult", class( res ) )
+  # class( res ) <- c( "powermsresult", class( res ) )
+  class(res) <- c("powermsresult", "data.frame")
 
   res
 }

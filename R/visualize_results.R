@@ -32,7 +32,9 @@ moe_plot <- function(p, x_axis, grouping=NULL) {
 
 #' plot results
 #'
-#'  note: requires unique site sizes!!!
+#' @param p powermsresult object
+#' @param sid unquoted site ID variable name
+#' @param grouping (optional) unquoted grouping variable name
 #'
 #' @export
 moe_plot_indiv <- function(p, sid=sid, grouping=NULL) {
@@ -54,7 +56,6 @@ moe_plot_indiv <- function(p, sid=sid, grouping=NULL) {
 
   agg <- p %>%
     add_sim_params() %>%
-    force_sid_n_match(sid={{sid}}) %>%
     dplyr::group_by({{grouping}}, {{sid}}) %>%
     dplyr::summarize(
       n = dplyr::first(n),
@@ -68,23 +69,6 @@ moe_plot_indiv <- function(p, sid=sid, grouping=NULL) {
       axis.line.x = ggplot2::element_line("black"),
       axis.line.y = ggplot2::element_line("black")
     )
-}
-
-# helper function: forces each sid to correspond to single site size
-#  assumes a bunch of things, e.g., distinct n for each site,
-#   same n values for all reps and sims, etc.
-force_sid_n_match <- function(p, sid=sid) {
-  sid_key <- p %>%
-    dplyr::filter(sim_id == 1, rep_id == 1) %>%
-    dplyr::select({{sid}}, n)
-
-  p %>%
-    dplyr::select(-{{sid}}) %>%
-    dplyr::left_join(sid_key, by="n") %>%
-    dplyr::relocate({{sid}}, .after="rep_id") %>%
-    dplyr::group_by(sim_id, rep_id) %>%
-    dplyr::arrange({{sid}}, .by_group=T) %>%
-    dplyr::ungroup()
 }
 
 

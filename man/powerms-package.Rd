@@ -3,7 +3,6 @@
 \docType{package}
 \name{powerms-package}
 \alias{powerms-package}
-\alias{powerms}
 \title{The 'powerms' package.}
 \description{
 A DESCRIPTION OF THE PACKAGE

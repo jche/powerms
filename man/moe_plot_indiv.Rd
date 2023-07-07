@@ -6,6 +6,13 @@
 \usage{
 moe_plot_indiv(p, sid = sid, grouping = NULL)
 }
+\arguments{
+\item{p}{powermsresult object}
+
+\item{sid}{unquoted site ID variable name}
+
+\item{grouping}{(optional) unquoted grouping variable name}
+}
 \description{
-note: requires unique site sizes!!!
+plot results
 }

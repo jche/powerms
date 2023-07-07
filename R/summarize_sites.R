@@ -91,7 +91,8 @@ summarize_sites <- function(df,
       tau_hat = ybar1 - ybar0,
       se = sqrt(sd1^2 / n1 + sd0^2 / n0)) %>%
     dplyr::select(!!site_id := sid,   # rename `sid` to site_id given by formula
-                  n, tau_hat, se)
+                  n, tau_hat, se) %>%
+    as.data.frame()
 }
 
 

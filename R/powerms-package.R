@@ -4,7 +4,7 @@
 #'
 #' @docType package
 #' @name powerms-package
-#' @aliases powerms
+#' @aliases powerms-package
 #' @useDynLib powerms, .registration = TRUE
 #' @import methods
 #' @import Rcpp
